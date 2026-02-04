@@ -32,14 +32,14 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export function CrimeLayer({ map }: CrimeLayerProps) {
   const { crime, setCrimeLoading } = useUnifiedFilters();
-  const { year, categories: crimeCategories, layerVisible, isLoading } = crime;
+  const { year, categories: crimeCategories, layerVisible, isLoading, displayMode } = crime;
   const [loaded, setLoaded] = useState(false);
   const [data, setData] = useState<CrimeMapGeoJSON | null>(null);
   const [error, setError] = useState<string | null>(null);
   const popupRef = useRef<mapboxgl.Popup | null>(null);
   const hoveredStateId = useRef<string | null>(null);
 
-  // Debounce filtterit 300ms viiveellä
+  // Debounce filtterit 300ms viiveellä (displayMode EI debouncea - instant feedback)
   const debouncedYear = useDebounce(year, 300);
   const debouncedCategories = useDebounce(crimeCategories, 300);
 
@@ -55,8 +55,18 @@ export function CrimeLayer({ map }: CrimeLayerProps) {
     const loadData = async () => {
       try {
         setCrimeLoading(true);
-        console.log('Fetching crime map data:', { year: debouncedYear, categories: debouncedCategories });
-        const crimeData = await fetchCrimeMapData(debouncedYear, debouncedCategories);
+        const usePerCapita = displayMode === 'perCapita';
+        console.log('Fetching crime map data:', {
+          year: debouncedYear,
+          categories: debouncedCategories,
+          usePerCapita
+        });
+        const crimeData = await fetchCrimeMapData(
+          debouncedYear,
+          debouncedCategories,
+          true, // useStaticData
+          usePerCapita
+        );
         console.log('Crime data loaded:', crimeData.metadata);
         setData(crimeData);
         setError(null);
@@ -69,7 +79,7 @@ export function CrimeLayer({ map }: CrimeLayerProps) {
     };
 
     loadData();
-  }, [debouncedYear, debouncedCategories, setCrimeLoading]);
+  }, [debouncedYear, debouncedCategories, displayMode, setCrimeLoading]);
 
   // Lisää kerros kartalle
   useEffect(() => {
@@ -196,6 +206,17 @@ export function CrimeLayer({ map }: CrimeLayerProps) {
         );
       }
 
+      // Määritä näytettävä arvo riippuen moodista
+      let displayValue: string;
+      if (displayMode === 'perCapita') {
+        const perCapita = props?.crimesPerCapita;
+        displayValue = perCapita !== undefined && perCapita !== null
+          ? `${perCapita.toFixed(1)} / 100k as.`
+          : 'Ei väestödataa';
+      } else {
+        displayValue = `${(props?.totalCrimes || 0).toLocaleString('fi-FI')} rikosta`;
+      }
+
       // Näytä tooltip - Glassmorphism-tyyli (toimii kaikilla taustoilla)
       const html = `
         <div class="
@@ -208,7 +229,7 @@ export function CrimeLayer({ map }: CrimeLayerProps) {
         ">
           <div class="font-semibold text-sm sm:text-base">${props?.nimi || 'Tuntematon'}</div>
           <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">
-            <span class="font-medium text-gray-900 dark:text-gray-100">${(props?.totalCrimes || 0).toLocaleString('fi-FI')}</span> rikosta
+            <span class="font-medium text-gray-900 dark:text-gray-100">${displayValue}</span>
           </div>
           <div class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">Vuosi ${props?.year || year}</div>
         </div>
@@ -238,7 +259,7 @@ export function CrimeLayer({ map }: CrimeLayerProps) {
       map.off('mouseleave', 'crime-fill', onMouseLeave);
       popup.remove();
     };
-  }, [map, loaded, year]);
+  }, [map, loaded, year, displayMode]);
 
   // Näkyvyyden hallinta
   useEffect(() => {

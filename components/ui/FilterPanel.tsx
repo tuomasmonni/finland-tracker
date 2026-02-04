@@ -17,6 +17,7 @@ export default function FilterPanel() {
     setCrimeYear,
     toggleCrimeCategory,
     setCrimeLayerVisible,
+    setCrimeDisplayMode,
     setTrafficTimeRange,
     toggleTrafficCategory,
     setTrafficLayerVisible,
@@ -185,6 +186,59 @@ export default function FilterPanel() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Display mode toggle */}
+            <div>
+              <label className={`text-xs ${textMutedClass} mb-2 block font-medium`}>
+                Näyttötapa
+              </label>
+              <div
+                role="radiogroup"
+                aria-label="Rikostilastojen näyttötapa"
+                className="grid grid-cols-2 gap-1 p-1 rounded bg-zinc-100 dark:bg-zinc-800"
+              >
+                <button
+                  role="radio"
+                  aria-checked={crime.displayMode === 'absolute'}
+                  onClick={() => setCrimeDisplayMode('absolute')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight') {
+                      setCrimeDisplayMode('perCapita');
+                      e.preventDefault();
+                    }
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${
+                    crime.displayMode === 'absolute'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : isDark
+                      ? 'text-zinc-400 hover:text-zinc-300'
+                      : 'text-zinc-600 hover:text-zinc-900'
+                  }`}
+                >
+                  Absoluuttinen
+                </button>
+                <button
+                  role="radio"
+                  aria-checked={crime.displayMode === 'perCapita'}
+                  onClick={() => setCrimeDisplayMode('perCapita')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowLeft') {
+                      setCrimeDisplayMode('absolute');
+                      e.preventDefault();
+                    }
+                  }}
+                  className={`px-3 py-1.5 text-sm font-medium rounded transition-all focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${
+                    crime.displayMode === 'perCapita'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : isDark
+                      ? 'text-zinc-400 hover:text-zinc-300'
+                      : 'text-zinc-600 hover:text-zinc-900'
+                  }`}
+                >
+                  Per 100k as.
+                </button>
+              </div>
             </div>
 
             {/* Category checkboxes */}

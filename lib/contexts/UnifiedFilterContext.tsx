@@ -27,6 +27,7 @@ interface UnifiedFilterState {
     categories: string[];
     layerVisible: boolean;
     isLoading: boolean;
+    displayMode: 'absolute' | 'perCapita';
   };
 
   // Liikenne
@@ -74,6 +75,7 @@ interface UnifiedFilterActions {
   toggleCrimeCategory: (code: string) => void;
   setCrimeLayerVisible: (visible: boolean) => void;
   setCrimeLoading: (loading: boolean) => void;
+  setCrimeDisplayMode: (mode: 'absolute' | 'perCapita') => void;
 
   // Traffic actions
   setTrafficTimeRange: (range: '2h' | '8h' | '24h' | '7d' | 'all') => void;
@@ -112,6 +114,7 @@ const DEFAULT_STATE: UnifiedFilterState = {
     categories: ['SSS'],
     layerVisible: false,
     isLoading: false,
+    displayMode: 'absolute',
   },
   traffic: {
     timeRange: 'all',
@@ -217,6 +220,13 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     setState(prev => ({
       ...prev,
       crime: { ...prev.crime, isLoading: loading },
+    }));
+  }, []);
+
+  const setCrimeDisplayMode = useCallback((mode: 'absolute' | 'perCapita') => {
+    setState(prev => ({
+      ...prev,
+      crime: { ...prev.crime, displayMode: mode },
     }));
   }, []);
 
@@ -356,6 +366,7 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     toggleCrimeCategory,
     setCrimeLayerVisible,
     setCrimeLoading,
+    setCrimeDisplayMode,
     setTrafficTimeRange,
     setTrafficCategories,
     toggleTrafficCategory,

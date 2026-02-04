@@ -250,14 +250,25 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     };
   }, [map, onEventSelect]);
 
-  // Hae uusi data kun aikasuodatin muuttuu
+  // Initial load + time range change
   useEffect(() => {
     if (!map || !fetchDataRef.current) return;
 
     const timeRange = traffic?.timeRange || 'all';
     console.log(`Time range changed to: ${timeRange}, refetching data...`);
     fetchDataRef.current(timeRange);
-  }, [map, traffic?.timeRange]);
+  }, [map, traffic?.timeRange, traffic?.layerVisible]);
+
+  // Force reload when categories change dramatically (e.g., from default to user selection)
+  useEffect(() => {
+    if (!map || !fetchDataRef.current || !allData) return;
+
+    // If we have no data yet, trigger initial fetch
+    if (allData.features.length === 0 && traffic?.layerVisible) {
+      console.log('No data yet, triggering initial fetch...');
+      fetchDataRef.current(traffic?.timeRange || 'all');
+    }
+  }, [map, traffic?.categories, traffic?.layerVisible, allData]);
 
   // Päivitä kartta kun data tai filterit muuttuvat
   useEffect(() => {

@@ -29,6 +29,7 @@ export async function GET() {
     let data;
     try {
       data = await fetchAllTrafficMessagesByType();
+      console.log(`✅ Fetched ${data.features.length} raw features from Digitraffic API`);
     } catch (fetchErr) {
       console.error('❌ Failed to fetch from Digitraffic API:', fetchErr);
       // Fallback: palauta tyhjä GeoJSON jos API failaa

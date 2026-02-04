@@ -185,6 +185,116 @@ function getMunicipalityName(code: string): string {
 }
 
 /**
+ * Hae väkilukutiedot Tilastokeskuksen PxWeb API:sta
+ * Taulukko: statfin_vaerak_pxt_11rh.px (Väestörakenne kunnittain)
+ *
+ * @param year - Vuosi (esim. "2024")
+ * @returns Map<kuntakoodi, väkiluku>
+ */
+export async function fetchPopulationData(year: string = '2024'): Promise<Map<string, number>> {
+  const url = `${PXWEB_BASE_URL}/vaerak/statfin_vaerak_pxt_11rh.px`;
+
+  const query: PxWebQuery = {
+    query: [
+      {
+        code: 'Alue',
+        selection: {
+          filter: 'all',
+          values: ['*'] // Kaikki kunnat
+        }
+      },
+      {
+        code: 'Kansalaisuus',
+        selection: {
+          filter: 'item',
+          values: ['SSS'] // Yhteensä (kaikki kansalaisuudet)
+        }
+      },
+      {
+        code: 'Sukupuoli',
+        selection: {
+          filter: 'item',
+          values: ['SSS'] // Yhteensä (molemmat sukupuolet)
+        }
+      },
+      {
+        code: 'Vuosi',
+        selection: {
+          filter: 'item',
+          values: [year]
+        }
+      },
+      {
+        code: 'Tiedot',
+        selection: {
+          filter: 'item',
+          values: ['vaesto'] // Väestö 31.12.
+        }
+      }
+    ],
+    response: {
+      format: 'json'
+    }
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(query),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Tilastokeskus API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return parsePopulationData(data);
+  } catch (error) {
+    console.error('Failed to fetch population data:', error);
+    throw error;
+  }
+}
+
+/**
+ * Parsii väkilukudatan PxWeb JSON-vastauksesta
+ *
+ * PxWeb JSON-rakenne:
+ * {
+ *   "data": [{"key": ["KU091", "SSS", "SSS", "2024", "vaesto"], "values": ["664258"]}, ...]
+ * }
+ *
+ * Kuntakoodi normalisoidaan: "KU091" → "091"
+ */
+function parsePopulationData(data: any): Map<string, number> {
+  const populationMap = new Map<string, number>();
+
+  if (data.data && Array.isArray(data.data)) {
+    for (const item of data.data) {
+      // Key-taulukossa: [Alue, Kansalaisuus, Sukupuoli, Vuosi, Tiedot]
+      const rawCode = item.key?.[0] || '';
+      const population = parseInt(item.values?.[0]) || 0;
+
+      // Ohita "SSS" (koko maa)
+      if (rawCode === 'SSS' || !rawCode.startsWith('KU')) {
+        continue;
+      }
+
+      // Muunna "KU091" → "091" (WFS-yhteensopiva)
+      const municipalityCode = rawCode.slice(2);
+
+      if (municipalityCode.length === 3) {
+        populationMap.set(municipalityCode, population);
+      }
+    }
+  }
+
+  return populationMap;
+}
+
+/**
  * Hae saatavilla olevat vuodet
  */
 export async function fetchAvailableYears(): Promise<string[]> {
@@ -355,11 +465,13 @@ function categorizeByQuantile(value: number, allValues: number[]): 'low' | 'medi
  * @param year - Vuosi (esim. "2023")
  * @param categories - ICCS-luokkakoodit (esim. ["SSS"] tai ["010000", "020000"])
  * @param useStaticData - Käytä staattista dataa (oletus: true)
+ * @param usePerCapita - Näytä per capita -luvut (per 100 000 asukasta)
  */
 export async function fetchCrimeMapData(
   year: string = '2023',
   categories: string[] = ['SSS'],
-  useStaticData: boolean = true
+  useStaticData: boolean = true,
+  usePerCapita: boolean = false
 ): Promise<CrimeMapGeoJSON> {
   // Hae kuntarajat ja tilastot
   const boundaries = await fetchMunicipalityBoundaries(parseInt(year));
@@ -387,14 +499,49 @@ export async function fetchCrimeMapData(
     crimeStats = await fetchCrimeStatsByMunicipality(year, categories);
   }
 
+  // Hae väkilukudata jos per capita -moodi on käytössä
+  let populationData: Map<string, number> | null = null;
+  if (usePerCapita) {
+    if (useStaticData) {
+      const { getStaticPopulationData, getAvailableYears } = await import('./static-data');
+      const availableYears = getAvailableYears();
+      if (availableYears.includes(year)) {
+        populationData = getStaticPopulationData(year);
+        console.log(`Käytetään staattista väkilukudataa vuodelle ${year}`);
+      }
+    }
+    // Jos staattista dataa ei ole, haetaan API:sta
+    if (!populationData) {
+      try {
+        populationData = await fetchPopulationData(year);
+        console.log(`Haettiin väkilukudata API:sta vuodelle ${year}`);
+      } catch (error) {
+        console.error('Väkilukudatan haku epäonnistui:', error);
+      }
+    }
+  }
+
+  // Laske per capita -arvot jos väkilukudata on saatavilla
+  if (usePerCapita && populationData) {
+    for (const stat of crimeStats) {
+      const population = populationData.get(stat.municipalityCode);
+      if (population && population > 0) {
+        stat.crimesPerCapita = (stat.totalCrimes / population) * 100000;
+      }
+    }
+  }
+
   // Luo lookup-taulukko rikostilastoista (kuntakoodi -> data)
   const crimeByMunicipality = new Map<string, CrimeStatistics>();
   for (const stat of crimeStats) {
     crimeByMunicipality.set(stat.municipalityCode, stat);
   }
 
-  // Kerää kaikki rikosarvot kvantiilikategorisointia varten
-  const allCrimeValues = crimeStats.map(s => s.totalCrimes).filter(v => v > 0);
+  // Kerää kaikki arvot kvantiilikategorisointia varten
+  // Käytä per capita -arvoja jos käytössä, muuten absoluuttisia
+  const allValues = crimeStats
+    .map(s => usePerCapita ? (s.crimesPerCapita ?? 0) : s.totalCrimes)
+    .filter(v => v > 0);
 
   // Yhdistä kuntarajat ja tilastot
   const features: CrimeMapFeature[] = [];
@@ -407,6 +554,11 @@ export async function fetchCrimeMapData(
     const crimes = stats?.totalCrimes || 0;
     totalCrimes += crimes;
 
+    // Valitse kategorisointiarvo riippuen moodista
+    const valueForCategory = usePerCapita
+      ? (stats?.crimesPerCapita ?? 0)
+      : crimes;
+
     features.push({
       type: 'Feature',
       geometry: boundary.geometry,
@@ -414,8 +566,9 @@ export async function fetchCrimeMapData(
         kunta: kuntaCode,
         nimi: boundary.properties.nimi,
         totalCrimes: crimes,
+        crimesPerCapita: stats?.crimesPerCapita,
         year: parseInt(year),
-        category: categorizeByQuantile(crimes, allCrimeValues),
+        category: categorizeByQuantile(valueForCategory, allValues),
       },
     });
   }

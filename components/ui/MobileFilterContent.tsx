@@ -21,6 +21,7 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
     setCrimeYear,
     toggleCrimeCategory,
     setCrimeLayerVisible,
+    setCrimeDisplayMode,
     setTrafficTimeRange,
     toggleTrafficCategory,
     setTrafficLayerVisible,
@@ -281,6 +282,41 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Display mode toggle */}
+            <div>
+              <label className={`text-xs ${textMutedClass} mb-2 block font-medium`}>
+                Näyttötapa
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={() => setCrimeDisplayMode('absolute')}
+                  className={`
+                    px-4 py-3 text-sm font-medium rounded
+                    transition-colors min-h-[44px]
+                    ${crime.displayMode === 'absolute'
+                      ? 'bg-blue-600 text-white'
+                      : buttonBgClass
+                    }
+                  `}
+                >
+                  Absoluuttinen
+                </button>
+                <button
+                  onClick={() => setCrimeDisplayMode('perCapita')}
+                  className={`
+                    px-4 py-3 text-sm font-medium rounded
+                    transition-colors min-h-[44px]
+                    ${crime.displayMode === 'perCapita'
+                      ? 'bg-blue-600 text-white'
+                      : buttonBgClass
+                    }
+                  `}
+                >
+                  Per 100k as.
+                </button>
+              </div>
             </div>
 
             {/* Categories */}

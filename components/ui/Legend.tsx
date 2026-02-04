@@ -34,6 +34,9 @@ export default function Legend() {
         <div className="mb-4">
           <h3 className={`text-xs font-semibold ${textMutedClass} mb-2 uppercase tracking-wide`}>
             🔴 Rikostaso ({crime.year})
+            {crime.displayMode === 'perCapita' && (
+              <span className="text-[10px] ml-1">(per 100k as.)</span>
+            )}
           </h3>
           <div className="space-y-1.5">
             {CRIME_QUANTILES.map((q) => (
