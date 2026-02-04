@@ -9,14 +9,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+// FAIL-SAFE: Älä kaada buildia jos env-muuttujat puuttuvat
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  console.warn(
+    '⚠️  Supabase disabled: Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY'
   );
 }
 
-// Create Supabase client
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Create Supabase client (null if not configured)
+const supabase = supabaseUrl && supabaseKey
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 // Export for use in server functions
 export { supabase };
@@ -27,10 +30,11 @@ export { supabase };
  */
 export function createAdminClient() {
   const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!adminKey) {
-    throw new Error('Missing SUPABASE_SERVICE_ROLE_KEY for admin operations');
+  if (!adminKey || !supabaseUrl) {
+    console.warn('⚠️  Admin client disabled: Missing credentials');
+    return null;
   }
-  return createClient(supabaseUrl!, adminKey);
+  return createClient(supabaseUrl, adminKey);
 }
 
 /**

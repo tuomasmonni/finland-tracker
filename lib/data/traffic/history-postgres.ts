@@ -28,12 +28,26 @@ export async function updateHistory(events: NormalizedEvent[]): Promise<{
   closedEvents: number;
   totalEvents: number;
 }> {
+  // FAIL-SAFE: Jos Supabase ei ole konfiguroitu, skipaa päivitys
+  if (!supabase) {
+    console.log('⚠️  History update skipped: Supabase not configured');
+    return {
+      newEvents: 0,
+      updatedEvents: 0,
+      closedEvents: 0,
+      totalEvents: events.length,
+    };
+  }
+
+  // TypeScript type guard: tästä eteenpäin supabase on varmasti ei-null
+  const db = supabase;
+
   const now = new Date().toISOString();
   const activeIds = events.map(e => e.id);
 
   try {
     // 1. Hae olemassa olevat tapahtumat (ID:iden mukaan)
-    const { data: existingEvents, error: fetchError } = await supabase
+    const { data: existingEvents, error: fetchError } = await db
       .from('event_history')
       .select('id')
       .in('id', activeIds);
@@ -51,7 +65,7 @@ export async function updateHistory(events: NormalizedEvent[]): Promise<{
 
     // 3. Lisää uudet tapahtumat
     if (newEventsList.length > 0) {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await db
         .from('event_history')
         .insert(
           newEventsList.map(event => ({
@@ -83,7 +97,7 @@ export async function updateHistory(events: NormalizedEvent[]): Promise<{
     // 4. Päivitä olemassa olevat tapahtumat (jokainen erikseen omilla tiedoillaan)
     if (updateEventsList.length > 0) {
       const updatePromises = updateEventsList.map(event =>
-        supabase
+        db
           .from('event_history')
           .update({
             last_seen: now,
@@ -108,7 +122,7 @@ export async function updateHistory(events: NormalizedEvent[]): Promise<{
     // Hae aktiiviset tapahtumat joita ei ole uusissa tapahtumissa
     let closedCount = 0;
     if (activeIds.length > 0) {
-      const { data: inactiveEvents, error: inactiveFetchError } = await supabase
+      const { data: inactiveEvents, error: inactiveFetchError } = await db
         .from('event_history')
         .select('id')
         .eq('is_active', true)
@@ -117,7 +131,7 @@ export async function updateHistory(events: NormalizedEvent[]): Promise<{
       if (inactiveFetchError) throw inactiveFetchError;
 
       if (inactiveEvents && inactiveEvents.length > 0) {
-        const { error: closeError } = await supabase
+        const { error: closeError } = await db
           .from('event_history')
           .update({ is_active: false, updated_at: now })
           .in('id', inactiveEvents.map(e => e.id));
@@ -132,14 +146,14 @@ export async function updateHistory(events: NormalizedEvent[]): Promise<{
     cutoffDate.setDate(cutoffDate.getDate() - MAX_HISTORY_DAYS);
     const cutoffStr = cutoffDate.toISOString();
 
-    await supabase
+    await db
       .from('event_history')
       .delete()
       .eq('is_active', false)
       .lt('last_seen', cutoffStr);
 
     // 7. Hae kokonaistapahtumamäärä
-    const { count, error: countError } = await supabase
+    const { count, error: countError } = await db
       .from('event_history')
       .select('*', { count: 'exact', head: true });
 
@@ -170,8 +184,15 @@ export async function getHistoryEvents(options: {
 } = {}): Promise<NormalizedEvent[]> {
   const { startTime, endTime, includeInactive = true, categories } = options;
 
+  // FAIL-SAFE: Jos Supabase ei ole konfiguroitu, palauta tyhjä
+  if (!supabase) {
+    return [];
+  }
+
+  const db = supabase;
+
   try {
-    let query = supabase
+    let query = db
       .from('event_history')
       .select('*')
       .order('last_seen', { ascending: false });
@@ -235,9 +256,23 @@ export async function getHistoryStats(): Promise<{
   newestEvent: string | null;
   categoryCounts: Record<string, number>;
 }> {
+  // FAIL-SAFE: Jos Supabase ei ole konfiguroitu, palauta tyhjä
+  if (!supabase) {
+    return {
+      totalEvents: 0,
+      activeEvents: 0,
+      closedEvents: 0,
+      oldestEvent: null,
+      newestEvent: null,
+      categoryCounts: {},
+    };
+  }
+
+  const db = supabase;
+
   try {
     // Hae tilastot aggregaatiolla (tehokkaampi kuin JSON)
-    const { data: stats, error: statsError } = await supabase
+    const { data: stats, error: statsError } = await db
       .from('event_history')
       .select(`
         id,
