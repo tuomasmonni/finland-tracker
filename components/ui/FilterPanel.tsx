@@ -107,7 +107,8 @@ export default function FilterPanel() {
                   Tapahtumat
                 </label>
                 <div className="space-y-1">
-                  {['accident', 'disruption', 'roadwork', 'weather', 'train', 'police', 'fire', 'transit'].map((catKey) => {
+                  {/* Vain kategoriat joista tulee dataa Fintraffic API:sta */}
+                  {['accident', 'disruption', 'roadwork', 'weather'].map((catKey) => {
                     const cat = EVENT_CATEGORIES[catKey as keyof typeof EVENT_CATEGORIES];
                     return (
                       <label
@@ -132,6 +133,11 @@ export default function FilterPanel() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Info viesti */}
+              <div className={`text-xs ${textMutedClass} italic px-2`}>
+                💡 Näytetään vain Fintraffic API:n tarjoamat kategoriat
               </div>
             </div>
           )}

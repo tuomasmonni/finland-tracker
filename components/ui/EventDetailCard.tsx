@@ -67,6 +67,20 @@ export default function EventDetailCard({ event, onClose }: EventDetailCardProps
 
   // Laske kortin sijainti - keskitetty näytölle tai klikkauskohtaan
   const getCardStyle = () => {
+    const isMobile = window.innerWidth < 768; // md breakpoint
+
+    // Mobiililla: bottom sheet tyylinen, kiinteä alalaidassa
+    if (isMobile) {
+      return {
+        position: 'fixed' as const,
+        left: '0',
+        right: '0',
+        bottom: '0',
+        maxHeight: '70vh',
+        borderRadius: '16px 16px 0 0',
+      };
+    }
+
     if (event.screenPosition) {
       const { x, y } = event.screenPosition;
       const cardWidth = 320;
@@ -106,16 +120,25 @@ export default function EventDetailCard({ event, onClose }: EventDetailCardProps
     };
   };
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <>
       {/* Tumma overlay */}
-      <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50" onClick={onClose} />
 
       {/* Kortti */}
       <div
         ref={cardRef}
         style={getCardStyle()}
-        className="z-50 w-80 bg-zinc-900 rounded-xl border border-zinc-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className={`
+          z-[60] bg-zinc-900 border border-zinc-700 shadow-2xl overflow-hidden
+          animate-in fade-in duration-200
+          ${isMobile
+            ? 'w-full slide-in-from-bottom-4'
+            : 'w-80 rounded-xl zoom-in-95'
+          }
+        `}
       >
         {/* Header värikoodilla */}
         <div

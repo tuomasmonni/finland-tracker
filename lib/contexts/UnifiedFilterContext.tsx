@@ -118,7 +118,8 @@ const DEFAULT_STATE: UnifiedFilterState = {
   },
   traffic: {
     timeRange: 'all',
-    categories: ['accident', 'disruption', 'roadwork', 'weather', 'train', 'police', 'fire', 'transit'],
+    // Vain kategoriat joista tulee dataa Fintraffic API:sta
+    categories: ['accident', 'disruption', 'roadwork', 'weather'],
     layerVisible: true,
   },
   weather: {

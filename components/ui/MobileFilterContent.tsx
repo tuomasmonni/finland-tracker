@@ -198,7 +198,8 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
                 Tapahtumat
               </label>
               <div className="space-y-1.5">
-                {['accident', 'disruption', 'roadwork', 'weather', 'train', 'police', 'fire', 'transit'].map((catKey) => {
+                {/* Vain kategoriat joista tulee dataa Fintraffic API:sta */}
+                {['accident', 'disruption', 'roadwork', 'weather'].map((catKey) => {
                   const cat = EVENT_CATEGORIES[catKey as keyof typeof EVENT_CATEGORIES];
                   return (
                     <label
