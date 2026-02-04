@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Mapbox overrides */
+.mapboxgl-ctrl-group {
+  background: rgba(24, 24, 27, 0.9) !important;
+  border: 1px solid rgba(63, 63, 70, 0.5) !important;
+}
+
+.mapboxgl-ctrl-group button {
+  background: transparent !important;
+}
+
+.mapboxgl-ctrl-group button:hover {
+  background: rgba(63, 63, 70, 0.5) !important;
+}
+
+.mapboxgl-ctrl-group button + button {
+  border-top: 1px solid rgba(63, 63, 70, 0.5) !important;
+}
+
+.mapboxgl-ctrl-icon {
+  filter: invert(1);
+}
+
+.mapboxgl-ctrl-attrib {
+  background: rgba(24, 24, 27, 0.8) !important;
+  color: #71717a !important;
+}
+
+.mapboxgl-ctrl-attrib a {
+  color: #a1a1aa !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #18181b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Mapbox popup styling */
+.traffic-popup .mapboxgl-popup-content {
+  background: rgba(24, 24, 27, 0.95) !important;
+  border: 1px solid rgba(63, 63, 70, 0.5) !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  color: #e4e4e7 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+.traffic-popup .mapboxgl-popup-tip {
+  border-top-color: rgba(24, 24, 27, 0.95) !important;
+}
+
+.traffic-popup .mapboxgl-popup-close-button {
+  color: #71717a !important;
+  font-size: 18px !important;
+  padding: 4px 8px !important;
+}
+
+.traffic-popup .mapboxgl-popup-close-button:hover {
+  color: #e4e4e7 !important;
+  background: transparent !important;
+}
