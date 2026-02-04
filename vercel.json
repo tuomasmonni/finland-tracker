@@ -11,7 +11,7 @@
     "UPSTASH_REDIS_REST_TOKEN": "@upstash_redis_rest_token",
     "IP_SALT": "@ip_salt"
   },
-  "regions": ["hel1"],
+  "regions": ["fra1"],
   "functions": {
     "api/traffic/route.ts": {
       "memory": 1024,
