@@ -196,14 +196,21 @@ export function CrimeLayer({ map }: CrimeLayerProps) {
         );
       }
 
-      // Näytä tooltip
+      // Näytä tooltip - Glassmorphism-tyyli (toimii kaikilla taustoilla)
       const html = `
-        <div class="bg-zinc-900 text-zinc-100 px-3 py-2 rounded-lg shadow-lg border border-zinc-700">
-          <div class="font-semibold">${props?.nimi || 'Tuntematon'}</div>
-          <div class="text-sm text-zinc-300 mt-1">
-            <span class="font-medium">${(props?.totalCrimes || 0).toLocaleString('fi-FI')}</span> rikosta
+        <div class="
+          backdrop-blur-md bg-white/95 dark:bg-gray-900/95
+          text-gray-900 dark:text-gray-100
+          px-3 py-2 sm:px-4 sm:py-2.5
+          rounded-xl shadow-2xl
+          border border-gray-200/50 dark:border-gray-700/50
+          min-w-[180px] sm:min-w-[200px]
+        ">
+          <div class="font-semibold text-sm sm:text-base">${props?.nimi || 'Tuntematon'}</div>
+          <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-300 mt-1">
+            <span class="font-medium text-gray-900 dark:text-gray-100">${(props?.totalCrimes || 0).toLocaleString('fi-FI')}</span> rikosta
           </div>
-          <div class="text-xs text-zinc-500 mt-0.5">Vuosi ${props?.year || year}</div>
+          <div class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mt-0.5">Vuosi ${props?.year || year}</div>
         </div>
       `;
 

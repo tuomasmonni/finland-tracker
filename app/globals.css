@@ -85,3 +85,26 @@ body {
   color: #e4e4e7 !important;
   background: transparent !important;
 }
+
+/* Crime tooltip - Glassmorphism (toimii kaikilla taustoilla) */
+.crime-tooltip .mapboxgl-popup-content {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.crime-tooltip .mapboxgl-popup-tip {
+  display: none !important; /* Piilota nuoli, ei sovi glassmorphismiin */
+}
+
+/* Mobiili-optimointi */
+@media (max-width: 640px) {
+  .crime-tooltip .mapboxgl-popup-content {
+    max-width: 90vw !important;
+    font-size: 13px !important;
+  }
+}
