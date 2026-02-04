@@ -150,12 +150,44 @@ export function transformTrainLocation(train: TrainLocation): NormalizedEvent {
 }
 
 /**
+ * Tarkista onko tapahtuma tuore
+ */
+function isEventFresh(feature: FintrafficFeature): boolean {
+  const announcement = feature.properties.announcements?.[0];
+  const now = new Date();
+
+  // Tarkista onko tapahtuma päättynyt
+  if (announcement?.timeAndDuration?.endTime) {
+    const endTime = new Date(announcement.timeAndDuration.endTime);
+
+    // Jos päättyi yli tunti sitten → filtteröi pois
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+    if (endTime < oneHourAgo) {
+      return false;
+    }
+  }
+
+  // Tarkista onko tapahtuma liian vanha (alkanut yli 7 päivää sitten)
+  if (announcement?.timeAndDuration?.startTime) {
+    const startTime = new Date(announcement.timeAndDuration.startTime);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    if (startTime < sevenDaysAgo) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
  * Muunna kaikki Fintraffic-tapahtumat
  */
 export function transformAllTrafficEvents(
   features: FintrafficFeature[]
 ): NormalizedEvent[] {
   return features
+    .filter(isEventFresh) // Aikasuodatin - poista vanhat tapahtumat
     .map(transformTrafficFeature)
     .filter(event => {
       // Suodata pois Suomen ulkopuoliset

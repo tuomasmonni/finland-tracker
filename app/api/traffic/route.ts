@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchAllTrafficMessages } from '@/lib/data/traffic/client';
+import { fetchAllTrafficMessagesByType } from '@/lib/data/traffic/client';
 import { transformAllTrafficEvents } from '@/lib/data/traffic/transform';
 import { updateHistory } from '@/lib/data/traffic/history-postgres';
 import { getCached, setCached } from '@/lib/cache/redis';
@@ -28,7 +28,7 @@ export async function GET() {
     console.log('🔄 Traffic cache miss, fetching from API...');
     let data;
     try {
-      data = await fetchAllTrafficMessages();
+      data = await fetchAllTrafficMessagesByType();
     } catch (fetchErr) {
       console.error('❌ Failed to fetch from Digitraffic API:', fetchErr);
       // Fallback: palauta tyhjä GeoJSON jos API failaa

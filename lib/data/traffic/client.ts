@@ -41,7 +41,12 @@ export async function fetchTrafficMessages(
  * Hae kaikki liikenneilmoitukset (kaikki tyypit)
  */
 export async function fetchAllTrafficMessages(): Promise<FintrafficMessageResponse> {
-  const response = await fetch(API_ENDPOINTS.trafficMessages, {
+  const url = new URL(API_ENDPOINTS.trafficMessages);
+
+  // KRIITTINEN: Hae vain aktiiviset tapahtumat (ei päättyneitä)
+  url.searchParams.set('inactiveHours', '0');
+
+  const response = await fetch(url.toString(), {
     headers: {
       'Accept-Encoding': 'gzip',
       'Accept': 'application/json',
@@ -54,6 +59,36 @@ export async function fetchAllTrafficMessages(): Promise<FintrafficMessageRespon
   }
 
   return response.json();
+}
+
+/**
+ * Hae kaikki tapahtumat hakemalla tyypit erikseen
+ * Varmistaa että TRAFFIC_ANNOUNCEMENT ja ROAD_WORK molemmat tulevat
+ */
+export async function fetchAllTrafficMessagesByType(): Promise<FintrafficMessageResponse> {
+  const situationTypes: Array<'TRAFFIC_ANNOUNCEMENT' | 'ROAD_WORK'> = [
+    'TRAFFIC_ANNOUNCEMENT',
+    'ROAD_WORK',
+  ];
+
+  // Hae tyypit rinnakkain (parallelointi)
+  const promises = situationTypes.map(type =>
+    fetchTrafficMessages(type)
+  );
+
+  const results = await Promise.all(promises);
+
+  // Yhdistä tulokset, poista duplikaatit situationId:n mukaan
+  const allFeatures = results.flatMap(r => r.features);
+  const uniqueFeatures = Array.from(
+    new Map(allFeatures.map(f => [f.properties.situationId, f])).values()
+  );
+
+  return {
+    type: 'FeatureCollection',
+    dataUpdatedTime: results[0]?.dataUpdatedTime || new Date().toISOString(),
+    features: uniqueFeatures,
+  };
 }
 
 /**
