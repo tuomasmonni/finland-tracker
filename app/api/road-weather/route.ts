@@ -6,13 +6,20 @@
 import { NextResponse } from 'next/server';
 import { fetchRoadWeatherData } from '@/lib/data/road-weather/client';
 import { transformRoadWeatherToEventFeatures } from '@/lib/data/road-weather/transform';
+import { getOrFetch } from '@/lib/cache/redis';
 
 export const revalidate = 300; // ISR: 5 min cache
 
 export async function GET() {
   try {
-    const stationData = await fetchRoadWeatherData();
-    const featureCollection = transformRoadWeatherToEventFeatures(stationData);
+    const featureCollection = await getOrFetch(
+      'road-weather:stations',
+      async () => {
+        const stationData = await fetchRoadWeatherData();
+        return transformRoadWeatherToEventFeatures(stationData);
+      },
+      240 // 4min TTL (polling 5min)
+    );
 
     console.log(`Road Weather API: ${featureCollection.features.length} stations`);
 

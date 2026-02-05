@@ -6,13 +6,20 @@
 import { NextResponse } from 'next/server';
 import { fetchAllTrafficMessages } from '@/lib/data/traffic/client';
 import { transformTrafficToEventFeatures } from '@/lib/data/traffic/transform';
+import { getOrFetch } from '@/lib/cache/redis';
 
 export const revalidate = 60; // ISR: 1 min cache
 
 export async function GET() {
   try {
-    const rawData = await fetchAllTrafficMessages();
-    const featureCollection = transformTrafficToEventFeatures(rawData);
+    const featureCollection = await getOrFetch(
+      'traffic:all',
+      async () => {
+        const rawData = await fetchAllTrafficMessages();
+        return transformTrafficToEventFeatures(rawData);
+      },
+      55 // 55s TTL (polling 60s)
+    );
 
     console.log(`Traffic API: ${featureCollection.features.length} events`);
 

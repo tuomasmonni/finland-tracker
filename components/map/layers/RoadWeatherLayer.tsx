@@ -36,14 +36,15 @@ export default function RoadWeatherLayer({ map, onEventSelect }: RoadWeatherLaye
     }
   };
 
-  // Init polling
+  // Init polling - only when layer is visible
   useEffect(() => {
+    if (!roadWeather.layerVisible) return;
     fetchData();
     intervalRef.current = setInterval(fetchData, POLLING_INTERVALS.roadWeather);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [roadWeather.layerVisible]);
 
   // Setup source & layers + update data
   useEffect(() => {

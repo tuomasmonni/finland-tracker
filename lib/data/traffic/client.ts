@@ -14,32 +14,31 @@ const SITUATION_TYPES = [
 ];
 
 export async function fetchAllTrafficMessages(): Promise<FintrafficMessageResponse> {
-  const allFeatures: any[] = [];
+  const results = await Promise.all(
+    SITUATION_TYPES.map(async (situationType) => {
+      try {
+        const url = `${API_ENDPOINTS.trafficMessages}?inactiveHours=0&includeAreaGeometry=false&situationType=${situationType}`;
+        const response = await fetch(url, {
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'tilannekuva.online/1.0',
+          },
+        });
 
-  for (const situationType of SITUATION_TYPES) {
-    try {
-      const url = `${API_ENDPOINTS.trafficMessages}?inactiveHours=0&includeAreaGeometry=false&situationType=${situationType}`;
-      const response = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'tilannekuva.online/1.0',
-        },
-      });
+        if (!response.ok) return [];
 
-      if (!response.ok) continue;
-
-      const data: FintrafficMessageResponse = await response.json();
-      if (data.features) {
-        allFeatures.push(...data.features);
+        const data: FintrafficMessageResponse = await response.json();
+        return data.features || [];
+      } catch (error) {
+        console.error(`Failed to fetch ${situationType}:`, error);
+        return [];
       }
-    } catch (error) {
-      console.error(`Failed to fetch ${situationType}:`, error);
-    }
-  }
+    })
+  );
 
   return {
     type: 'FeatureCollection',
     dataUpdatedTime: new Date().toISOString(),
-    features: allFeatures,
+    features: results.flat(),
   };
 }

@@ -6,13 +6,20 @@
 import { NextResponse } from 'next/server';
 import { fetchHslVehiclePositions } from '@/lib/data/transit/client';
 import { transformTransitToEventFeatures } from '@/lib/data/transit/transform';
+import { getOrFetch } from '@/lib/cache/redis';
 
 export const revalidate = 10; // ISR: 10 sec (real-time data)
 
 export async function GET() {
   try {
-    const vehicles = await fetchHslVehiclePositions();
-    const featureCollection = transformTransitToEventFeatures(vehicles);
+    const featureCollection = await getOrFetch(
+      'transit:vehicles',
+      async () => {
+        const vehicles = await fetchHslVehiclePositions();
+        return transformTransitToEventFeatures(vehicles);
+      },
+      8 // 8s TTL (polling 15s)
+    );
 
     console.log(`Transit API: ${featureCollection.features.length} vehicles`);
 

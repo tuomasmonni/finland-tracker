@@ -35,14 +35,15 @@ export default function WeatherLayer({ map, onEventSelect }: WeatherLayerProps) 
     }
   };
 
-  // Init polling
+  // Init polling - only when layer is visible
   useEffect(() => {
+    if (!weather.layerVisible) return;
     fetchData();
     intervalRef.current = setInterval(fetchData, POLLING_INTERVALS.weather);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [weather.layerVisible]);
 
   // Setup source & layers + update data
   useEffect(() => {

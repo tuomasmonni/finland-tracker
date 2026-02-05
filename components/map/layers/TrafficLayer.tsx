@@ -38,6 +38,11 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     filtersRef.current = traffic;
   }, [traffic]);
 
+  const layerVisibleRef = useRef(traffic?.layerVisible);
+  useEffect(() => {
+    layerVisibleRef.current = traffic?.layerVisible;
+  }, [traffic?.layerVisible]);
+
   const fetchDataRef = useRef<((timeRange?: string) => Promise<void>) | null>(null);
 
   // Map setup
@@ -233,6 +238,7 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     map.on('click', 'traffic-events-icons', handleClick);
 
     const interval = setInterval(() => {
+      if (!layerVisibleRef.current) return; // Skip polling when hidden
       const currentTimeRange = filtersRef.current?.timeRange || 'all';
       fetchData(currentTimeRange);
     }, POLLING_INTERVALS.traffic);

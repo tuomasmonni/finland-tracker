@@ -362,6 +362,8 @@ export function crimeStatsToGeoJsonProperties(stats: CrimeStatistics[]): Record<
 // KUNTARAJAT (Tilastokeskus WFS)
 // ============================================
 
+import { getOrFetch } from '@/lib/cache/redis';
+
 const WFS_BASE_URL = 'https://geo.stat.fi/geoserver/tilastointialueet/wfs';
 
 export interface MunicipalityBoundary {
@@ -473,8 +475,12 @@ export async function fetchCrimeMapData(
   useStaticData: boolean = true,
   usePerCapita: boolean = false
 ): Promise<CrimeMapGeoJSON> {
-  // Hae kuntarajat ja tilastot
-  const boundaries = await fetchMunicipalityBoundaries(parseInt(year));
+  // Hae kuntarajat (cached 24h - muuttuvat vain vuosittain)
+  const boundaries = await getOrFetch(
+    `boundaries:${year}`,
+    () => fetchMunicipalityBoundaries(parseInt(year)),
+    86400 // 24h TTL
+  );
 
   // Käytä staattista dataa jos saatavilla
   let crimeStats: CrimeStatistics[];

@@ -40,14 +40,15 @@ export default function TransitLayer({ map, onEventSelect }: TransitLayerProps) 
     }
   };
 
-  // Init polling (15s for real-time transit data)
+  // Init polling (15s for real-time transit data) - only when visible
   useEffect(() => {
+    if (!transit.layerVisible) return;
     fetchData();
     intervalRef.current = setInterval(fetchData, POLLING_INTERVALS.transit);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [transit.layerVisible]);
 
   // Setup source & layers
   useEffect(() => {

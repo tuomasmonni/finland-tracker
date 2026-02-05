@@ -6,13 +6,20 @@
 import { NextResponse } from 'next/server';
 import { fetchFmiWeatherData } from '@/lib/data/weather/client';
 import { transformFmiToEventFeatures } from '@/lib/data/weather/transform';
+import { getOrFetch } from '@/lib/cache/redis';
 
 export const revalidate = 300; // ISR: 5 min cache
 
 export async function GET() {
   try {
-    const observations = await fetchFmiWeatherData();
-    const featureCollection = transformFmiToEventFeatures(observations);
+    const featureCollection = await getOrFetch(
+      'weather:stations',
+      async () => {
+        const observations = await fetchFmiWeatherData();
+        return transformFmiToEventFeatures(observations);
+      },
+      240 // 4min TTL (polling 5min)
+    );
 
     console.log(`Weather API: ${featureCollection.features.length} stations`);
 
