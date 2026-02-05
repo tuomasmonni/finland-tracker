@@ -71,6 +71,9 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
           type: 'circle',
           source: 'traffic-events',
           filter: ['has', 'point_count'],
+          layout: {
+            'visibility': traffic?.layerVisible ? 'visible' : 'none',
+          },
           paint: {
             'circle-color': [
               'step', ['get', 'point_count'],
@@ -94,6 +97,7 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
             'text-field': '{point_count_abbreviated}',
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12,
+            'visibility': traffic?.layerVisible ? 'visible' : 'none',
           },
           paint: {
             'text-color': '#ffffff',
@@ -290,13 +294,13 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
 
   // Visibility
   useEffect(() => {
-    if (!map || !map.getLayer('traffic-events-icons')) return;
+    if (!map || !layersReady || !map.getLayer('traffic-events-icons')) return;
     const vis = traffic?.layerVisible ? 'visible' : 'none';
     map.setLayoutProperty('traffic-events-icons', 'visibility', vis);
     map.setLayoutProperty('traffic-events-pulse', 'visibility', vis);
     map.setLayoutProperty('traffic-events-clusters', 'visibility', vis);
     map.setLayoutProperty('traffic-events-cluster-count', 'visibility', vis);
-  }, [map, traffic?.layerVisible]);
+  }, [map, traffic?.layerVisible, layersReady]);
 
   return null;
 }
