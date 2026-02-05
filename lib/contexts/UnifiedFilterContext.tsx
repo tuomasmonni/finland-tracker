@@ -8,7 +8,6 @@ import {
   ReactNode,
 } from 'react';
 import { CRIME_CATEGORIES, AVAILABLE_YEARS, type MapTheme } from '@/lib/constants';
-import type { EventCategory } from '@/lib/constants';
 
 // ============================================
 // RE-EXPORT CONSTANTS
@@ -28,30 +27,6 @@ interface UnifiedFilterState {
     layerVisible: boolean;
     isLoading: boolean;
     displayMode: 'absolute' | 'perCapita';
-  };
-
-  // Liikenne
-  traffic: {
-    timeRange: '2h' | '8h' | '24h' | '7d' | 'all';
-    categories: EventCategory[];
-    layerVisible: boolean;
-  };
-
-  // Sää (FMI)
-  weather: {
-    layerVisible: boolean;
-    metric: 'temperature' | 'wind' | 'precipitation';
-  };
-
-  // Joukkoliikenne (HSL)
-  transit: {
-    layerVisible: boolean;
-    vehicleTypes: ('bus' | 'tram' | 'metro' | 'train')[];
-  };
-
-  // Tiesää (Digitraffic)
-  roadWeather: {
-    layerVisible: boolean;
   };
 
   // Kelikamerat (Digitraffic)
@@ -77,24 +52,6 @@ interface UnifiedFilterActions {
   setCrimeLoading: (loading: boolean) => void;
   setCrimeDisplayMode: (mode: 'absolute' | 'perCapita') => void;
 
-  // Traffic actions
-  setTrafficTimeRange: (range: '2h' | '8h' | '24h' | '7d' | 'all') => void;
-  setTrafficCategories: (categories: EventCategory[]) => void;
-  toggleTrafficCategory: (category: EventCategory) => void;
-  setTrafficLayerVisible: (visible: boolean) => void;
-
-  // Weather actions
-  setWeatherLayerVisible: (visible: boolean) => void;
-  setWeatherMetric: (metric: 'temperature' | 'wind' | 'precipitation') => void;
-
-  // Transit actions
-  setTransitLayerVisible: (visible: boolean) => void;
-  setTransitVehicleTypes: (types: ('bus' | 'tram' | 'metro' | 'train')[]) => void;
-  toggleTransitVehicleType: (type: 'bus' | 'tram' | 'metro' | 'train') => void;
-
-  // Road weather actions
-  setRoadWeatherLayerVisible: (visible: boolean) => void;
-
   // Weather camera actions
   setWeatherCameraLayerVisible: (visible: boolean) => void;
   setSelectedWeatherCamera: (stationId: string | null) => void;
@@ -112,26 +69,9 @@ const DEFAULT_STATE: UnifiedFilterState = {
   crime: {
     year: '2024',
     categories: ['SSS'],
-    layerVisible: false,
+    layerVisible: true, // Rikostilastot oletuksena PÄÄLLÄ
     isLoading: false,
     displayMode: 'absolute',
-  },
-  traffic: {
-    timeRange: 'all',
-    // Vain kategoriat joista tulee dataa Fintraffic API:sta
-    categories: ['accident', 'disruption', 'roadwork', 'weather'],
-    layerVisible: true,
-  },
-  weather: {
-    layerVisible: false,
-    metric: 'temperature',
-  },
-  transit: {
-    layerVisible: false,
-    vehicleTypes: ['bus', 'tram', 'metro', 'train'],
-  },
-  roadWeather: {
-    layerVisible: false,
   },
   weatherCamera: {
     layerVisible: false,
@@ -231,107 +171,6 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     }));
   }, []);
 
-  // ========== TRAFFIC ACTIONS ==========
-
-  const setTrafficTimeRange = useCallback(
-    (timeRange: '2h' | '8h' | '24h' | '7d' | 'all') => {
-      setState(prev => ({
-        ...prev,
-        traffic: { ...prev.traffic, timeRange },
-      }));
-    },
-    []
-  );
-
-  const setTrafficCategories = useCallback((categories: EventCategory[]) => {
-    setState(prev => ({
-      ...prev,
-      traffic: { ...prev.traffic, categories },
-    }));
-  }, []);
-
-  const toggleTrafficCategory = useCallback((category: EventCategory) => {
-    setState(prev => {
-      const currentCategories = prev.traffic.categories;
-      const newCategories = currentCategories.includes(category)
-        ? currentCategories.filter(c => c !== category)
-        : [...currentCategories, category];
-
-      return {
-        ...prev,
-        traffic: { ...prev.traffic, categories: newCategories },
-      };
-    });
-  }, []);
-
-  const setTrafficLayerVisible = useCallback((visible: boolean) => {
-    setState(prev => ({
-      ...prev,
-      traffic: { ...prev.traffic, layerVisible: visible },
-    }));
-  }, []);
-
-  // ========== WEATHER ACTIONS ==========
-
-  const setWeatherLayerVisible = useCallback((visible: boolean) => {
-    setState(prev => ({
-      ...prev,
-      weather: { ...prev.weather, layerVisible: visible },
-    }));
-  }, []);
-
-  const setWeatherMetric = useCallback((metric: 'temperature' | 'wind' | 'precipitation') => {
-    setState(prev => ({
-      ...prev,
-      weather: { ...prev.weather, metric },
-    }));
-  }, []);
-
-  // ========== TRANSIT ACTIONS ==========
-
-  const setTransitLayerVisible = useCallback((visible: boolean) => {
-    setState(prev => ({
-      ...prev,
-      transit: { ...prev.transit, layerVisible: visible },
-    }));
-  }, []);
-
-  const setTransitVehicleTypes = useCallback(
-    (types: ('bus' | 'tram' | 'metro' | 'train')[]) => {
-      setState(prev => ({
-        ...prev,
-        transit: { ...prev.transit, vehicleTypes: types },
-      }));
-    },
-    []
-  );
-
-  const toggleTransitVehicleType = useCallback(
-    (type: 'bus' | 'tram' | 'metro' | 'train') => {
-      setState(prev => {
-        const currentTypes = prev.transit.vehicleTypes;
-        const newTypes = currentTypes.includes(type)
-          ? currentTypes.filter(t => t !== type)
-          : [...currentTypes, type];
-
-        return {
-          ...prev,
-          transit: { ...prev.transit, vehicleTypes: newTypes },
-        };
-      });
-    },
-    []
-  );
-
-  // ========== ROAD WEATHER ACTIONS ==========
-
-  const setRoadWeatherLayerVisible = useCallback((visible: boolean) => {
-    setState(prev => ({
-      ...prev,
-      roadWeather: { ...prev.roadWeather, layerVisible: visible },
-    }));
-  }, []);
-
   // ========== WEATHER CAMERA ACTIONS ==========
 
   const setWeatherCameraLayerVisible = useCallback((visible: boolean) => {
@@ -368,16 +207,6 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     setCrimeLayerVisible,
     setCrimeLoading,
     setCrimeDisplayMode,
-    setTrafficTimeRange,
-    setTrafficCategories,
-    toggleTrafficCategory,
-    setTrafficLayerVisible,
-    setWeatherLayerVisible,
-    setWeatherMetric,
-    setTransitLayerVisible,
-    setTransitVehicleTypes,
-    toggleTransitVehicleType,
-    setRoadWeatherLayerVisible,
     setWeatherCameraLayerVisible,
     setSelectedWeatherCamera,
     setTheme,

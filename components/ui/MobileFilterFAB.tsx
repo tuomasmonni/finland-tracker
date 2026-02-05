@@ -8,11 +8,10 @@ interface MobileFilterFABProps {
 }
 
 export default function MobileFilterFAB({ onClick, isDark }: MobileFilterFABProps) {
-  const { traffic, crime, weatherCamera } = useUnifiedFilters();
+  const { crime, weatherCamera } = useUnifiedFilters();
 
   // Laske aktiivisten filtterien määrä
   const activeFiltersCount =
-    (traffic.layerVisible ? traffic.categories.length : 0) +
     (crime.layerVisible ? crime.categories.length : 0) +
     (weatherCamera.layerVisible ? 1 : 0);
 

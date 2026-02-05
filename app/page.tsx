@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useCallback, useEffect, Suspense } from 'react';
+import { useState, useCallback } from 'react';
 import type { Map as MapboxMap } from 'mapbox-gl';
 import {
   UnifiedFilterProvider,
   useUnifiedFilters,
 } from '@/lib/contexts/UnifiedFilterContext';
-import type { EventDetails } from '@/lib/types';
 import Header from '@/components/ui/Header';
 import FilterPanel from '@/components/ui/FilterPanel';
 import MobileFilterFAB from '@/components/ui/MobileFilterFAB';
@@ -15,8 +14,6 @@ import Legend from '@/components/ui/Legend';
 import LoadingScreen from '@/components/ui/LoadingScreen';
 import MapContainer from '@/components/map/MapContainer';
 import CrimeLayer from '@/components/map/layers/CrimeLayer';
-import TrafficLayer from '@/components/map/layers/TrafficLayer';
-import EventDetailCard from '@/components/ui/EventDetailCard';
 import dynamic from 'next/dynamic';
 
 const WeatherCameraLayer = dynamic(
@@ -32,7 +29,6 @@ const WeatherCameraModal = dynamic(
 function AppContent() {
   const [map, setMap] = useState<MapboxMap | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState<EventDetails | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { theme } = useUnifiedFilters();
 
@@ -40,13 +36,6 @@ function AppContent() {
     setMap(mapInstance);
     setIsLoading(false);
   }, []);
-
-  // Close sheet when event detail opens
-  useEffect(() => {
-    if (selectedEvent) {
-      setIsSheetOpen(false);
-    }
-  }, [selectedEvent]);
 
   return (
     <main className="relative w-full h-screen bg-zinc-950 overflow-hidden">
@@ -76,7 +65,6 @@ function AppContent() {
         {map && (
           <>
             <CrimeLayer map={map} />
-            <TrafficLayer map={map} onEventSelect={setSelectedEvent} />
             <WeatherCameraLayer map={map} />
           </>
         )}
@@ -92,12 +80,6 @@ function AppContent() {
         <Legend />
       </div>
 
-      {/* Event Details Modal */}
-      <EventDetailCard
-        event={selectedEvent}
-        onClose={() => setSelectedEvent(null)}
-      />
-
       {/* Weather Camera Modal */}
       <WeatherCameraModal />
 
@@ -108,7 +90,7 @@ function AppContent() {
           : 'bg-white/90 text-zinc-600 border-zinc-200'
       }`}>
         <p className={`font-medium ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-900'}`}>Tietolähteet</p>
-        <p>{theme === 'dark' ? 'Tilastokeskus + Fintraffic' : 'Tilastokeskus + Fintraffic'}</p>
+        <p>Tilastokeskus + Fintraffic (kamerat)</p>
         <p className={`mt-1 ${theme === 'dark' ? 'text-zinc-500' : 'text-zinc-500'}`}>Päivittyy automaattisesti</p>
       </div>
 
