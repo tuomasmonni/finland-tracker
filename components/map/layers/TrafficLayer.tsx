@@ -277,6 +277,8 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     const vis = traffic?.layerVisible ? 'visible' : 'none';
     map.setLayoutProperty('traffic-events-icons', 'visibility', vis);
     map.setLayoutProperty('traffic-events-pulse', 'visibility', vis);
+    map.setLayoutProperty('traffic-events-clusters', 'visibility', vis);
+    map.setLayoutProperty('traffic-events-cluster-count', 'visibility', vis);
   }, [map, traffic?.layerVisible]);
 
   return null;

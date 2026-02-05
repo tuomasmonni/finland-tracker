@@ -21,6 +21,7 @@ export async function fetchAllTrafficMessages(): Promise<FintrafficMessageRespon
         const response = await fetch(url, {
           headers: {
             'Accept': 'application/json',
+            'Accept-Encoding': 'gzip',
             'User-Agent': 'tilannekuva.online/1.0',
           },
         });

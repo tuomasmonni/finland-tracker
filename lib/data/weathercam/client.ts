@@ -16,6 +16,7 @@ export async function fetchWeatherCameras(): Promise<WeatherCameraApiResponse> {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
+        'Accept-Encoding': 'gzip',
         'User-Agent': 'tilannekuva.online/1.0',
       },
     });
