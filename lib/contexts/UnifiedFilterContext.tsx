@@ -154,6 +154,8 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     setState(prev => ({
       ...prev,
       crime: { ...prev.crime, layerVisible: visible },
+      // Vain yksi moduuli kerrallaan päällä
+      weatherCamera: { ...prev.weatherCamera, layerVisible: visible ? false : prev.weatherCamera.layerVisible },
     }));
   }, []);
 
@@ -177,6 +179,8 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     setState(prev => ({
       ...prev,
       weatherCamera: { ...prev.weatherCamera, layerVisible: visible },
+      // Vain yksi moduuli kerrallaan päällä
+      crime: { ...prev.crime, layerVisible: visible ? false : prev.crime.layerVisible },
     }));
   }, []);
 
