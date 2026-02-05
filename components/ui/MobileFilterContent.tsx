@@ -6,7 +6,7 @@ import {
   CRIME_CATEGORIES,
   AVAILABLE_YEARS,
 } from '@/lib/contexts/UnifiedFilterContext';
-import { EVENT_CATEGORIES, type EventCategory } from '@/lib/constants';
+import { EVENT_CATEGORIES, NEWS_CATEGORIES, NEWS_SOURCES, type EventCategory, type NewsCategoryKey, type NewsSourceKey } from '@/lib/constants';
 
 interface MobileFilterContentProps {
   mode: 'compact' | 'expanded';
@@ -20,6 +20,7 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
     transit,
     roadWeather,
     weatherCamera,
+    news,
     theme,
     setCrimeYear,
     toggleCrimeCategory,
@@ -34,6 +35,11 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
     toggleTransitVehicleType,
     setRoadWeatherLayerVisible,
     setWeatherCameraLayerVisible,
+    setNewsLayerVisible,
+    setNewsTimeRange,
+    toggleNewsSource,
+    toggleNewsCategory,
+    setNewsSearchQuery,
   } = useUnifiedFilters();
 
   const [expandedSection, setExpandedSection] = useState<string | null>('weatherCamera');
@@ -50,6 +56,7 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
   const transitExpanded = expandedSection === 'transit';
   const trafficExpanded = expandedSection === 'traffic';
   const roadWeatherExpanded = expandedSection === 'roadWeather';
+  const newsExpanded = expandedSection === 'news';
 
   const isDark = theme === 'dark';
   const textClass = isDark ? 'text-zinc-200' : 'text-zinc-800';
@@ -68,6 +75,19 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
             Tasot
           </label>
           <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setNewsLayerVisible(!news.layerVisible)}
+              className={`
+                px-4 py-2.5 rounded-lg text-sm font-medium
+                transition-colors min-h-[44px]
+                ${news.layerVisible
+                  ? 'bg-green-600 text-white hover:bg-green-700 active:bg-green-800'
+                  : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600 active:bg-zinc-500'
+                }
+              `}
+            >
+              &#128240; Uutiset
+            </button>
             <button
               onClick={() => setWeatherCameraLayerVisible(!weatherCamera.layerVisible)}
               className={`
@@ -155,6 +175,128 @@ export default function MobileFilterContent({ mode }: MobileFilterContentProps) 
   // Expanded mode: Full filter panel (mobiili-optimoitu)
   return (
     <div className="p-5 space-y-6">
+      {/* ========== UUTISET ========== */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <button
+            onClick={() => toggleSection('news')}
+            className={`flex items-center gap-2 text-sm font-semibold transition-colors ${textClass} min-h-[44px]`}
+          >
+            <span className="text-amber-400">&#128240;</span>
+            <span>UUTISET</span>
+            <span className={`transition-transform text-xs ml-auto ${newsExpanded ? 'rotate-180' : ''}`}>&#9660;</span>
+          </button>
+          <button
+            onClick={() => setNewsLayerVisible(!news.layerVisible)}
+            className={`
+              px-3 py-1.5 rounded text-xs font-medium
+              transition-colors min-h-[44px] min-w-[60px]
+              ${news.layerVisible
+                ? 'bg-green-600 text-white hover:bg-green-700 active:bg-green-800'
+                : 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600 active:bg-zinc-500'
+              }
+            `}
+          >
+            {news.layerVisible ? 'ON' : 'OFF'}
+          </button>
+        </div>
+
+        {newsExpanded && (
+          <div className="space-y-3 pt-2">
+            {/* Time range */}
+            <div>
+              <label className={`text-xs ${textMutedClass} mb-2 block font-medium`}>Aikaikkuna</label>
+              <div className="grid grid-cols-5 gap-2">
+                {([
+                  { value: '1h' as const, label: '1h' },
+                  { value: '6h' as const, label: '6h' },
+                  { value: '24h' as const, label: '24h' },
+                  { value: '7d' as const, label: '7pv' },
+                  { value: '30d' as const, label: '30pv' },
+                ]).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setNewsTimeRange(opt.value)}
+                    className={`
+                      px-2 py-2.5 text-sm font-medium rounded-lg
+                      transition-colors min-h-[44px]
+                      ${news.timeRange === opt.value
+                        ? 'bg-amber-600 text-white'
+                        : isDark ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' : 'bg-zinc-200 text-zinc-600 hover:bg-zinc-300'
+                      }
+                    `}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Media sources */}
+            <div>
+              <label className={`text-xs ${textMutedClass} mb-2 block font-medium`}>Media</label>
+              <div className="flex gap-2">
+                {(Object.entries(NEWS_SOURCES) as [NewsSourceKey, typeof NEWS_SOURCES[NewsSourceKey]][]).map(([key, src]) => (
+                  <button
+                    key={key}
+                    onClick={() => toggleNewsSource(key)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border min-h-[44px] ${
+                      news.sources.includes(key)
+                        ? 'border-amber-500 text-amber-400 bg-amber-500/10'
+                        : isDark ? 'border-zinc-700 text-zinc-500' : 'border-zinc-300 text-zinc-400'
+                    }`}
+                  >
+                    {src.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div>
+              <label className={`text-xs ${textMutedClass} mb-2 block font-medium`}>Kategoriat</label>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {(Object.entries(NEWS_CATEGORIES) as [NewsCategoryKey, typeof NEWS_CATEGORIES[NewsCategoryKey]][]).map(([key, cat]) => (
+                  <label
+                    key={key}
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors min-h-[48px] ${hoverBgClass}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={news.categories.includes(key)}
+                      onChange={() => toggleNewsCategory(key)}
+                      className="w-6 h-6 rounded accent-amber-600 flex-shrink-0"
+                    />
+                    <span className="text-lg">{cat.emoji}</span>
+                    <span className={`text-sm flex-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                      {cat.label}
+                    </span>
+                    <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: cat.color }} />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Search */}
+            <div>
+              <input
+                type="text"
+                placeholder="Hae uutisista..."
+                value={news.searchQuery}
+                onChange={(e) => setNewsSearchQuery(e.target.value)}
+                className={`w-full px-4 py-3 rounded-lg border text-sm focus:border-amber-500 focus:outline-none transition-colors min-h-[48px] ${selectBgClass}`}
+              />
+            </div>
+
+            <p className={`text-sm ${textMutedClass}`}>
+              {news.layerVisible
+                ? 'YLE, Iltalehti, MTV uutiset kartalla (AI-analysoitu)'
+                : 'Uutiskerros piilotettu'}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* ========== KELIKAMERAT ========== */}
       <div>
         <div className="flex items-center justify-between mb-3">
