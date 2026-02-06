@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Kelikamerat Types
+ * Tilannetieto.fi - Kelikamerat Types
  * Digitraffic API yhteensopivat tyypit
  */
 

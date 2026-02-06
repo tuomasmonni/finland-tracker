@@ -104,7 +104,7 @@ export async function fetchFmiSnowData(): Promise<SnowObservation[]> {
   const response = await fetch(`${FMI_WFS_URL}?${params}`, {
     headers: {
       'Accept': 'application/xml',
-      'User-Agent': 'tilannekuva.online/1.0',
+      'User-Agent': 'tilannetieto.fi/1.0',
     },
   });
 

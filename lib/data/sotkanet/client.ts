@@ -38,7 +38,7 @@ async function getRegionMap(): Promise<Map<number, SotkanetRegion>> {
 
   const url = `${SOTKANET_BASE}/regions`;
   const response = await fetch(url, {
-    headers: { 'User-Agent': 'tilannekuva.online/1.0' },
+    headers: { 'User-Agent': 'tilannetieto.fi/1.0' },
     next: { revalidate: 86400 }, // 24h cache
   });
 
@@ -70,7 +70,7 @@ export async function fetchIndicatorByMunicipality(
 ): Promise<Map<string, { value: number; absValue?: number; regionName: string }>> {
   const [dataResponse, regionMap] = await Promise.all([
     fetch(`${SOTKANET_BASE}/json?indicator=${indicatorId}&years=${year}&genders=total`, {
-      headers: { 'User-Agent': 'tilannekuva.online/1.0' },
+      headers: { 'User-Agent': 'tilannetieto.fi/1.0' },
       next: { revalidate: 86400 }, // 24h cache
     }),
     getRegionMap(),
@@ -110,7 +110,7 @@ export async function fetchNationalAverage(
 ): Promise<number | null> {
   const [dataResponse, regionMap] = await Promise.all([
     fetch(`${SOTKANET_BASE}/json?indicator=${indicatorId}&years=${year}&genders=total`, {
-      headers: { 'User-Agent': 'tilannekuva.online/1.0' },
+      headers: { 'User-Agent': 'tilannetieto.fi/1.0' },
       next: { revalidate: 86400 },
     }),
     getRegionMap(),

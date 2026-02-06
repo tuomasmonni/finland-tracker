@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Weather Camera Transform
+ * Tilannetieto.fi - Weather Camera Transform
  * Muuntaa Digitraffic API-vastauksen sovelluksen muotoon
  */
 

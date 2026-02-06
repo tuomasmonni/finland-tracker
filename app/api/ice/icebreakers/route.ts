@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Icebreaker Routes API
+ * Tilannetieto.fi - Icebreaker Routes API
  * Digitraffic winter navigation dirways -> GeoJSON
  */
 

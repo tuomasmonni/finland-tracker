@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Weather API Route
+ * Tilannetieto.fi - Weather API Route
  * FMI sääasemat → EventFeatureCollection
  */
 

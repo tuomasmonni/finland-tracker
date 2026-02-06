@@ -41,7 +41,7 @@ export default function SidebarFooter({ collapsed }: SidebarFooterProps) {
           <span>{isDark ? 'Tumma' : 'Vaalea'}</span>
         </button>
         <span className={`text-[10px] ${isDark ? 'text-zinc-600' : 'text-zinc-400'}`}>
-          tilannekuva.online
+          tilannetieto.fi
         </span>
       </div>
     </div>

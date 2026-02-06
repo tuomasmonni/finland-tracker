@@ -61,7 +61,7 @@ async function fetchTrainDataGraphQL(): Promise<TrainWithLocation[]> {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       'Accept-Encoding': 'gzip',
-      'Digitraffic-User': 'tilannekuva.online/1.0',
+      'Digitraffic-User': 'tilannetieto.fi/1.0',
     },
     body: JSON.stringify({ query: GRAPHQL_QUERY }),
   });
@@ -112,7 +112,7 @@ async function fetchTrainLocationsOnly(): Promise<TrainWithLocation[]> {
     headers: {
       'Accept': 'application/json',
       'Accept-Encoding': 'gzip',
-      'Digitraffic-User': 'tilannekuva.online/1.0',
+      'Digitraffic-User': 'tilannetieto.fi/1.0',
     },
   });
 

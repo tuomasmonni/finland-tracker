@@ -121,7 +121,7 @@ export async function fetchIcebreakerRoutes(): Promise<IcebreakerGeoJSON> {
   const response = await fetch('https://meri.digitraffic.fi/api/winter-navigation/v2/dirways', {
     headers: {
       'Accept': 'application/json',
-      'Digitraffic-User': 'tilannekuva.online/1.0',
+      'Digitraffic-User': 'tilannetieto.fi/1.0',
     },
   });
 

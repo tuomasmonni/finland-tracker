@@ -34,7 +34,7 @@ export async function fetchHslVehiclePositions(): Promise<HslVehiclePosition[]> 
     const response = await fetch(HSL_VEHICLE_POSITIONS_URL, {
       headers: {
         'Accept-Encoding': 'gzip',
-        'User-Agent': 'tilannekuva.online/1.0',
+        'User-Agent': 'tilannetieto.fi/1.0',
       },
     });
 

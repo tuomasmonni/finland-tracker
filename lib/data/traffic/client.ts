@@ -22,7 +22,7 @@ export async function fetchAllTrafficMessages(): Promise<FintrafficMessageRespon
           headers: {
             'Accept': 'application/json',
             'Accept-Encoding': 'gzip',
-            'Digitraffic-User': 'tilannekuva.online/1.0',
+            'Digitraffic-User': 'tilannetieto.fi/1.0',
           },
         });
 

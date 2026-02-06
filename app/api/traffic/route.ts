@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Traffic API Route
+ * Tilannetieto.fi - Traffic API Route
  * Fintraffic liikenneilmoitukset → EventFeatureCollection
  */
 

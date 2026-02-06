@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Weather Camera API Route
+ * Tilannetieto.fi - Weather Camera API Route
  * Next.js API endpoint joka välimuistiin kelikamerat 5 minuutiksi
  */
 

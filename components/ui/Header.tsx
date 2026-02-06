@@ -10,7 +10,7 @@ export default function Header() {
             <span className="text-lg sm:text-xl">📍</span>
           </div>
           <div className="min-w-0">
-            <h1 className="text-lg sm:text-xl font-bold truncate text-white">Tilannekuva</h1>
+            <h1 className="text-lg sm:text-xl font-bold truncate text-white">Tilannetieto</h1>
             <p className="text-xs hidden sm:block text-zinc-400">Suomen reaaliaikainen kartta</p>
           </div>
         </div>

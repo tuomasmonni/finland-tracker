@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Snow API Route
+ * Tilannetieto.fi - Snow API Route
  * FMI lumensyvyys -> EventFeatureCollection
  */
 

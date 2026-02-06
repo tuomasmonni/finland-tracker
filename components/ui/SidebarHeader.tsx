@@ -19,7 +19,7 @@ export default function SidebarHeader({ collapsed, onToggleCollapse }: SidebarHe
             <span className="text-sm">📍</span>
           </div>
           <span className={`text-sm font-bold truncate ${isDark ? 'text-white' : 'text-zinc-900'}`}>
-            Tilannekuva
+            Tilannetieto
           </span>
         </div>
       )}

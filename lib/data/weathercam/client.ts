@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Weather Camera Client
+ * Tilannetieto.fi - Weather Camera Client
  * Digitraffic API wrapper
  */
 
@@ -16,8 +16,7 @@ export async function fetchWeatherCameras(): Promise<WeatherCameraApiResponse> {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'Accept-Encoding': 'gzip',
-        'Digitraffic-User': 'tilannekuva.online/1.0',
+        'Digitraffic-User': 'tilannetieto.fi/1.0',
       },
     });
 

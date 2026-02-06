@@ -1,5 +1,5 @@
 /**
- * Tilannekuva.online - Yhteiset tyyppimäärittelyt
+ * Tilannetieto.fi - Yhteiset tyyppimäärittelyt
  * Sisältää sekä liikenteen (traffic) että rikostilastojen (crime) tyypit
  */
 
