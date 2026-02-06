@@ -1,37 +1,35 @@
-# Finland Tracker - Projektin ohjeet agentille
+# Tilannetieto.fi - Projektin ohjeet agentille
 
 ## Repo & Ympäristö
 
 - **Repo:** `tuomasmonni/finland-tracker`
 - **Remote:** `git@github.com:tuomasmonni/finland-tracker.git`
-- **Tuotanto:** https://tilannekuva.online (Vercel, auto-deploy mainista)
-- **Vercel-projekti:** finland-tracker-v1 (tmo-8c3e6ad2)
-- **Lokaali kehitys:** Ei toimi ilman `.env.local` (Mapbox-token puuttuu). Käytä Vercel Preview -brancheja testaukseen.
+- **Vercel-projekti:** finland-tracker-v1 (tmo-8c3e6ad2), projekti-ID: prj_XpxhAkPTReHvHYWZVwWPemVWWCyn
+- **Lokaali kehitys:** Ei toimi ilman `.env.local` (Mapbox-token puuttuu). Käytä dev/preview-brancheja testaukseen.
 
-## Aktiivinen kehitysbranch
+## Domainit ja roolit
 
-- **Branch:** `feature/new-layers`
-- **Preview:** https://finland-tracker-v1-git-feature-new-layers-tmo-8c3e6ad2.vercel.app
-- **Sisältö:** Uudet karttatasot (sää, joukkoliikenne, tiesää, liikenne)
-- **Tila:** Kehityksessä, EI testattu, EI tuotantovalmis
-
-**TÄRKEÄÄ:** Kaikki uusi kehitystyö tehdään tähän branchiin tai siitä haarautuviin feature-brancheihin. Mainiin EI commitoida suoraan.
+| Domain | Branch | Rooli |
+|--------|--------|-------|
+| **tilannetieto.fi** | `main` | Tuotanto |
+| **datasuomi.fi** | `dev` | Dev/staging — testaajille jaettava |
+| **finscope.fi** | — | Vapaa / markkinointi |
 
 ## DEPLOY-SÄÄNNÖT (PAKOLLINEN)
 
-**ÄLÄ KOSKAAN pushaa suoraan mainiin. Noudata AINA tätä työnkulkua:**
+**Kaikki kehitystyö kulkee AINA dev-branchin kautta. Mainiin EI commitoida suoraan.**
 
 ### Työnkulku
 
 ```
-1. Luo feature-branch mainista
+1. Luo feature-branch devistä (tai mainista)
 2. Commitoi VAIN kyseiseen ominaisuuteen liittyvät muutokset
 3. Push feature-branch → Vercel luo automaattisesti preview-linkin
-4. Anna preview-linkki käyttäjälle testattavaksi
+4. Merge feature-branch → dev → datasuomi.fi (testaajat testaavat)
 5. ODOTA käyttäjän hyväksyntä
 6. Käyttäjän hyväksyttyä → listaa TARKASTI mitä menee tuotantoon
 7. ODOTA käyttäjän vahvistus listaukselle
-8. Vasta sitten: merge mainiin + push
+8. Vasta sitten: merge dev → main → push → tilannetieto.fi
 ```
 
 ### Ehdottomat säännöt
@@ -48,33 +46,28 @@
    EI MENE TUOTANTOON:
    - [lokaalit muutokset X, Y, Z]
    ```
-4. **Testaamaton koodi EI KOSKAAN tuotantoon.** Jokainen ominaisuus testataan preview-branchissa ennen mergea.
+4. **Testaamaton koodi EI KOSKAAN tuotantoon.** Jokainen ominaisuus testataan datasuomi.fi:ssä ennen mergea mainiin.
 5. **Älä oleta.** Jos käyttäjä sanoo "laita tuotantoon", varmista silti MITÄ laitetaan.
 
 ### Feature-branch nimeäminen
 
 ```
-feature/[lyhyt-kuvaus]    esim. feature/accordion-sections
+feature/[lyhyt-kuvaus]    esim. feature/dark-mode
 fix/[bugin-kuvaus]        esim. fix/crime-calculation
 ```
 
-### Preview-linkin muoto
-
-```
-https://finland-tracker-v1-git-[branch-nimi]-tmo-8c3e6ad2.vercel.app
-```
-
-### Merge-prosessi (kun käyttäjä hyväksynyt)
+### Merge-prosessi (kun käyttäjä hyväksynyt datasuomi.fi:ssä)
 
 ```bash
-git stash                    # Piilota lokaalit muutokset
-git checkout main
-git merge feature/x --no-ff  # Merge-commit
-git push origin main         # Tuotantoon
-git stash pop                # Palauta lokaalit muutokset
-```
+git checkout dev
+git merge feature/x          # Feature deviin
+git push origin dev           # → datasuomi.fi päivittyy
 
-Jos stash pop aiheuttaa konfliktin → ratkaise niin että lokaalit kehitysmuutokset säilyvät ja tuotantomuutokset ovat mukana.
+# Testauksen jälkeen, kun hyväksytty:
+git checkout main
+git merge dev --no-ff         # Dev mainiin
+git push origin main          # → tilannetieto.fi päivittyy
+```
 
 ## Tekniset muistiinpanot
 

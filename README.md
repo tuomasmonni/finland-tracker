@@ -1,172 +1,89 @@
-# Tilannekuva.online
+# Tilannetieto.fi
 
-Suomen reaaliaikainen tapahtumakartta - yhdistää rikostilastot ja liikennetiedot yhdelle kartalle.
+Suomen reaaliaikainen tilannekuvakartta - yhdistää rikostilastot, liikennetiedot, sään ja kelikamerat yhdelle kartalle.
+
+## Domainit
+
+| Domain | Rooli |
+|--------|-------|
+| **tilannetieto.fi** | Tuotanto (main branch) |
+| **datasuomi.fi** | Dev/staging (dev branch) |
+| **finscope.fi** | Vapaa |
 
 ## Teknologia
 
-- **Next.js 16.1.6** - React-pohjainen full-stack framework
+- **Next.js 16** - React-pohjainen full-stack framework
 - **React 19** - UI komponentit
 - **TypeScript 5** - Tyyppiturva
-- **Mapbox GL JS 3.18** - Kartavisualiointi
+- **Mapbox GL JS 3** - Kartavisualisointi
 - **Tailwind CSS 4** - Styling
-- **Fintraffic API** - Reaaliaikainen liikennentieto
-- **Tilastokeskus** - Rikostilastot
+- **Vercel** - Hosting & auto-deploy
+- **Vercel Analytics** - Käyttäjäseuranta
+
+## Datalähteet
+
+| Lähde | Data | Tyyppi |
+|-------|------|--------|
+| **Tilastokeskus** | Rikostilastot (ICCS) | Staattinen JSON |
+| **Fintraffic** | Liikenneilmoitukset | Reaaliaikainen API |
+| **Digitraffic** | Tiesää, kelikamerat | Reaaliaikainen API |
+| **FMI** | Sääasemat | Reaaliaikainen API |
+| **HSL** | Joukkoliikenne | Reaaliaikainen API |
 
 ## Rakenne
 
 ```
-tilannekuva.online/
+tilannetieto.fi/
 ├── app/                  # Next.js App Router
-│   ├── page.tsx         # Pääsivu
-│   ├── layout.tsx       # Root layout
-│   ├── globals.css      # Global styles
+│   ├── page.tsx         # Pääsivu (kartta)
+│   ├── layout.tsx       # Root layout + Analytics
 │   └── api/             # API endpoints
 │       ├── crime-stats/ # Rikostilastot
-│       ├── traffic/     # Liikennetiedot (live)
-│       └── history/     # Liikennehistoria
+│       ├── traffic/     # Liikennetiedot
+│       ├── weather/     # Sääasemat (FMI)
+│       ├── road-weather/# Tiesääasemat
+│       ├── weathercam/  # Kelikamerat
+│       └── transit/     # Joukkoliikenne (HSL)
 │
 ├── components/
-│   ├── map/
-│   │   ├── MapContainer.tsx      # Mapbox-kartta
-│   │   └── layers/
-│   │       ├── CrimeLayer.tsx    # Rikostilastokerros
-│   │       └── TrafficLayer.tsx  # Liikennekerros
-│   └── ui/
-│       ├── Header.tsx            # Otsikko + theme toggle
-│       ├── FilterPanel.tsx       # Suodattimet (yhdistetty)
-│       ├── Legend.tsx            # Selite
-│       ├── EventDetailCard.tsx   # Tapahtuman yksityiskohdat
-│       └── LoadingScreen.tsx     # Latausekraani
+│   ├── map/             # Karttakomponentit + layerit
+│   └── ui/              # UI-komponentit
 │
 ├── lib/
-│   ├── contexts/
-│   │   └── UnifiedFilterContext.tsx  # Yhdistetty state management
-│   ├── data/
-│   │   ├── crime/       # Rikostilastojen data-utilit
-│   │   └── traffic/     # Liikennedatan data-utilit
-│   ├── constants.ts     # Vakiot (crime + traffic)
-│   ├── types.ts         # Tyyppimäärittelyt
-│   └── map-icons.ts     # SVG-ikonit kartalle
+│   ├── contexts/        # UnifiedFilterContext (state management)
+│   ├── data/            # API-asiakkaat per datalähde
+│   ├── constants.ts     # Vakiot
+│   └── types.ts         # Tyyppimäärittelyt
 │
-└── data/
-    └── static/
-        └── crime-statistics.json  # Staattinen rikostilastodata
+└── data/static/         # Staattinen data (rikostilastot)
 ```
 
-## Asentaminen
+## Kehitys
 
 ```bash
-# Kloonaa repo ja mene hakemistoon
-cd /mnt/c/Dev/IMPERIUM/2_KONSEPTIT/tilannekuva.online
-
-# Asenna dependencies
+# Lokaali kehitys vaatii .env.local (Mapbox-token)
 npm install
-
-# Luo .env.local ja aseta Mapbox token
-echo "NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1..." > .env.local
-
-# Kehityspalvelin
 npm run dev
 
-# Avaa selaimessa
-# http://localhost:3000
+# TAI käytä dev-branchia: push → datasuomi.fi päivittyy automaattisesti
 ```
 
-## Konfiguraatio
-
-### .env.local
+### Deploy-työnkulku
 
 ```
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ1... # Mapbox API token
+feature-branch → merge → dev → datasuomi.fi (testaus)
+                                    ↓ hyväksytty
+                         merge → main → tilannetieto.fi (tuotanto)
 ```
-
-Saat tokenin osoitteesta: https://account.mapbox.com/
-
-## Kerrosrakenne
-
-Kartalla on kaksi päällekkäistä kerrosta:
-
-### 1. Rikostilastot (Choropleth)
-- **Tausta**: Kunnan polygonit väreillä
-- **Värit**: Quantile-luokittelu (matala→erittäin korkea)
-- **Vuodet**: 2020-2024
-- **Kategoriat**: 8 rikosluokkaa (henkirikokset, väkivalta, jne.)
-- **Hover**: Tooltip kunnan nimellä ja tilastoilla
-
-### 2. Liikenneilmoitukset (Point Markers)
-- **Ikonit**: SVG-ikonit kategorioittain (onnettomuus, häiriö, tietyö)
-- **Pulse-efekti**: Korkeaprioriteettiset tapahtumat
-- **Klikkaus**: Avaa yksityiskohdat
-- **Aikasuodatin**: 2h, 8h, 24h, 7pv, all
-- **Kategoriat**: Onnettomuus, häiriö, tietyö
-
-## API Endpoints
-
-### GET /api/crime-stats
-Palauttaa rikostilastot GeoJSON-muodossa.
-
-Query params:
-- `year` (default: 2024) - Vuosi
-- `categories` (default: SSS) - Pilkulla erotetut ICCS-koodit
-
-Vastaus: GeoJSON FeatureCollection
-
-### GET /api/traffic
-Palauttaa live-liikenneilmoitukset GeoJSON-muodossa.
-
-Vastaus: GeoJSON FeatureCollection
-
-### GET /api/history
-Palauttaa liikenneilmoitusten historian aika-suodatuksella.
-
-Query params:
-- `hours` (default: 24) - Montako tuntia taaksepäin
-- `includeInactive` (default: true) - Näytä myös päättyneet
-- `stats` (default: false) - Vain tilastot
-
-## State Management
-
-**UnifiedFilterContext** hallinnoi kaikkea suodatimen tilaa:
-
-```typescript
-crime: {
-  year: '2024',           // Valittu vuosi
-  categories: ['SSS'],    // Valitut rikosluokat
-  layerVisible: boolean,  // Näkyykö kerros
-  isLoading: boolean      // Ladataanko dataa
-}
-
-traffic: {
-  timeRange: 'all',       // Aikasuodatin
-  categories: [...],      // Valitut tapahtumakategoriat
-  layerVisible: boolean   // Näkyykö kerros
-}
-
-theme: 'dark'             // dark | light
-```
-
-## Lisäominaisuudet
-
-- [ ] URL-parametrit (jakaminen)
-- [ ] Aikavertailu (slider useammalle vuodelle)
-- [ ] Export karttakuvaksi (PNG/PDF)
-- [ ] Analytics (Plausible/Umami)
-- [ ] Supabase-integraatio historialle
-- [ ] Lisädatalähteet (väestö, taloustilastot)
-
-## Lisensointi
-
-MIT - Vapaasti käytettävissä ja muokattavissa.
 
 ## Tekijät
 
 - **IMPERIUM AI** - Sovelluskehitys
-- **Tilastokeskus** - Rikostilastot
-- **Fintraffic** - Liikenneilmoitukset
+- **Tilastokeskus** - Rikostilastot (CC BY 4.0)
+- **Fintraffic / Digitraffic** - Liikenne & tiesää (CC BY 4.0)
+- **FMI** - Säädata (CC BY 4.0)
 - **Mapbox** - Karttainfrastruktuuri
 
 ---
 
-**Domain**: tilannekuva.online
-**GitHub**: [@tilannehuoneFI](https://x.com/tilannehuoneFI)
-**Version**: 0.1.0 (Alpha)
+**Tuotanto**: tilannetieto.fi | **Dev**: datasuomi.fi | **GitHub**: tuomasmonni/finland-tracker
