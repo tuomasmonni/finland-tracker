@@ -8,7 +8,7 @@ import { fetchAllTrafficMessages } from '@/lib/data/traffic/client';
 import { transformTrafficToEventFeatures } from '@/lib/data/traffic/transform';
 import { getOrFetch } from '@/lib/cache/redis';
 
-export const revalidate = 60; // ISR: 1 min cache
+export const dynamic = 'force-dynamic'; // Ei prerenderöidä buildissa
 
 export async function GET() {
   try {
@@ -21,7 +21,7 @@ export async function GET() {
       55 // 55s TTL (polling 60s)
     );
 
-    console.log(`Traffic API: ${featureCollection.features.length} events`);
+    console.log(`Traffic API: ${featureCollection.features?.length ?? 0} events`);
 
     return NextResponse.json(featureCollection, {
       status: 200,

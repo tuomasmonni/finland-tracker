@@ -113,5 +113,11 @@ export async function fetchFmiSnowData(): Promise<SnowObservation[]> {
   }
 
   const xmlText = await response.text();
-  return parseSnowFeatures(xmlText);
+  if (!xmlText || xmlText.length < 100) {
+    console.error(`[Snow] FMI returned empty/short response (${xmlText.length} chars)`);
+    return [];
+  }
+  const results = parseSnowFeatures(xmlText);
+  console.log(`[Snow] Parsed ${results.length} stations from XML (${xmlText.length} chars)`);
+  return results;
 }

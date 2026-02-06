@@ -55,10 +55,10 @@ function getSeverity(feature: FintrafficFeature): 'low' | 'medium' | 'high' {
   return 'medium';
 }
 
-export function transformTrafficToEventFeatures(response: { features: FintrafficFeature[] }): EventFeatureCollection {
+export function transformTrafficToEventFeatures(response: { features?: FintrafficFeature[] }): EventFeatureCollection {
   const features: EventFeature[] = [];
 
-  for (const feature of response.features) {
+  for (const feature of (response?.features || [])) {
     const coords = getCoordinates(feature);
     if (!coords) continue;
 
