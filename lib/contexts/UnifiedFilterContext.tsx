@@ -886,7 +886,6 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     setHealthYear,
     setHealthLayerVisible,
     setHealthLoading,
-    setIceLayerVisible,
     setHotLipsLayerVisible,
     setTheme,
     resetFilters,

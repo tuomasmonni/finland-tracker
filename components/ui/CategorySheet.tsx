@@ -60,6 +60,7 @@ export default function CategorySheet({ group, onClose }: CategorySheetProps) {
     setHousingLayerVisible,
     setPopulationLayerVisible,
     setHealthLayerVisible,
+    setIceLayerVisible,
     setHotLipsLayerVisible,
   } = useUnifiedFilters();
 
