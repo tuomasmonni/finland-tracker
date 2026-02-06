@@ -48,7 +48,7 @@ export default function TrainLayer({ map, onEventSelect }: TrainLayerProps) {
   useEffect(() => {
     if (!map) return;
 
-    const setup = async () => {
+    const addSourceAndLayers = async () => {
       try {
         await loadMapIcons(map);
       } catch (error) {
@@ -165,26 +165,49 @@ export default function TrainLayer({ map, onEventSelect }: TrainLayerProps) {
         });
 
         // Cursor styles
-        map.on('mouseenter', ICONS_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-        map.on('mouseleave', ICONS_LAYER, () => { map.getCanvas().style.cursor = ''; });
-        map.on('mouseenter', CLUSTER_LAYER, () => { map.getCanvas().style.cursor = 'pointer'; });
-        map.on('mouseleave', CLUSTER_LAYER, () => { map.getCanvas().style.cursor = ''; });
+        const handleIconEnter = () => { map.getCanvas().style.cursor = 'pointer'; };
+        const handleIconLeave = () => { map.getCanvas().style.cursor = ''; };
+        map.on('mouseenter', ICONS_LAYER, handleIconEnter);
+        map.on('mouseleave', ICONS_LAYER, handleIconLeave);
+        map.on('mouseenter', CLUSTER_LAYER, handleIconEnter);
+        map.on('mouseleave', CLUSTER_LAYER, handleIconLeave);
       }
     };
 
+    // Re-create source & layers after style change (e.g. satellite toggle)
+    const handleStyleLoad = async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await addSourceAndLayers();
+    };
+
+    const initMap = async () => {
+      await addSourceAndLayers();
+      map.on('style.load', handleStyleLoad);
+    };
+
     if (map.isStyleLoaded()) {
-      setup();
+      initMap();
     } else {
-      map.on('load', setup);
+      map.on('load', initMap);
     }
+
+    return () => {
+      map.off('style.load', handleStyleLoad);
+    };
   }, [map, onEventSelect]);
 
   // Update data + filter by train type
   useEffect(() => {
-    if (!map || !allData) return;
+    if (!map) return;
 
     const source = map.getSource(SOURCE_ID);
     if (!source || !('setData' in source)) return;
+
+    // Clear source when layer is hidden
+    if (!train.layerVisible || !allData) {
+      source.setData({ type: 'FeatureCollection', features: [] });
+      return;
+    }
 
     // Filter by selected train types
     const filtered: EventFeatureCollection = {
@@ -203,7 +226,7 @@ export default function TrainLayer({ map, onEventSelect }: TrainLayerProps) {
     };
 
     source.setData(filtered);
-  }, [map, allData, train.trainTypes]);
+  }, [map, allData, train.trainTypes, train.layerVisible]);
 
   // Visibility control
   useEffect(() => {

@@ -6,20 +6,13 @@
 import { NextResponse } from 'next/server';
 import { fetchTrainData } from '@/lib/data/train/client';
 import { transformTrainToEventFeatures } from '@/lib/data/train/transform';
-import { getOrFetch } from '@/lib/cache/redis';
 
 export const dynamic = 'force-dynamic'; // Ei prerenderöidä buildissa
 
 export async function GET() {
   try {
-    const featureCollection = await getOrFetch(
-      'train:locations',
-      async () => {
-        const trains = await fetchTrainData();
-        return transformTrainToEventFeatures(trains);
-      },
-      8 // 8s TTL (polling 10s)
-    );
+    const trains = await fetchTrainData();
+    const featureCollection = transformTrainToEventFeatures(trains);
 
     console.log(`Train API: ${featureCollection.features?.length ?? 0} trains`);
 
