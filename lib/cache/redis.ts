@@ -54,16 +54,14 @@ export async function setCached<T>(
   if (!REDIS_URL || !REDIS_TOKEN) return false;
 
   try {
-    const response = await fetch(`${REDIS_URL}/set/${key}`, {
+    const serialized = JSON.stringify(value);
+    const response = await fetch(REDIS_URL, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${REDIS_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        value: JSON.stringify(value),
-        ex: ttlSeconds, // Expire in X seconds
-      }),
+      body: JSON.stringify(['SET', key, serialized, 'EX', ttlSeconds]),
     });
 
     return response.ok;

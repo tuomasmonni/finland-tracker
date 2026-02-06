@@ -108,3 +108,75 @@ body {
     font-size: 13px !important;
   }
 }
+
+/* ============================================ */
+/* Category Navigator - Glassmorphism & Sidebar */
+/* ============================================ */
+
+.glass-surface {
+  background: rgba(24, 24, 27, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-surface-light {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Bottom sheet spring physics */
+.sheet-transition {
+  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Sidebar collapse transition */
+.sidebar-transition {
+  transition: width 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Layer card expand/collapse */
+.layer-settings-enter {
+  animation: settingsExpand 200ms ease-out forwards;
+}
+
+.layer-settings-exit {
+  animation: settingsCollapse 200ms ease-out forwards;
+}
+
+@keyframes settingsExpand {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}
+
+@keyframes settingsCollapse {
+  from {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* Toggle switch animation */
+.toggle-switch {
+  transition: background-color 200ms ease, transform 100ms ease;
+}
+
+.toggle-switch:active {
+  transform: scale(0.95);
+}

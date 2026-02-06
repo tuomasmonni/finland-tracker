@@ -40,8 +40,9 @@ export default function WeatherCameraLayer({ map }: WeatherCameraLayerProps) {
     }
   };
 
-  // Alusta polling
+  // Alusta polling - only when layer is visible
   useEffect(() => {
+    if (!weatherCamera.layerVisible) return;
     fetchStations();
     intervalRef.current = setInterval(
       fetchStations,
@@ -51,7 +52,7 @@ export default function WeatherCameraLayer({ map }: WeatherCameraLayerProps) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [weatherCamera.layerVisible]);
 
   // Päivitä kartan layer-tiedot
   useEffect(() => {

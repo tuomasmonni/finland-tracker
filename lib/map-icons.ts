@@ -116,6 +116,54 @@ export const fireIcon = `
 </svg>
 `;
 
+// Bussi - vihreä ympyrä bussilla (joukkoliikenne)
+export const busIcon = `
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <circle cx="20" cy="20" r="16" fill="#10b981" stroke="#ffffff" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="12" y="10" width="16" height="18" rx="3" fill="white"/>
+  <rect x="14" y="12" width="12" height="7" rx="1" fill="#10b981"/>
+  <circle cx="15" cy="25" r="1.5" fill="#10b981"/>
+  <circle cx="25" cy="25" r="1.5" fill="#10b981"/>
+  <rect x="11" y="18" width="2" height="4" rx="0.5" fill="white"/>
+  <rect x="27" y="18" width="2" height="4" rx="0.5" fill="white"/>
+</svg>
+`;
+
+// Lämpömittari - violetti ympyrä lämpömittarilla (tiesää)
+export const thermometerIcon = `
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <circle cx="20" cy="20" r="16" fill="#8b5cf6" stroke="#ffffff" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="17" y="8" width="6" height="18" rx="3" fill="white"/>
+  <circle cx="20" cy="28" r="4" fill="white"/>
+  <rect x="19" y="14" width="2" height="12" fill="#ef4444"/>
+  <circle cx="20" cy="28" r="2.5" fill="#ef4444"/>
+</svg>
+`;
+
+// Lumihiutale - syaani ympyrä lumihiutaleella
+export const snowflakeIcon = `
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+  <circle cx="20" cy="20" r="16" fill="#a5f3fc" stroke="#ffffff" stroke-width="2" filter="url(#shadow)"/>
+  <path d="M20 8v24M8 20h24M12 12l16 16M28 12L12 28" stroke="#0e7490" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="20" cy="20" r="3" fill="#0e7490"/>
+</svg>
+`;
+
 // Oletus - harmaa ympyrä
 export const defaultIcon = `
 <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -139,6 +187,9 @@ export const mapIcons: Record<string, string> = {
   camera: cameraIcon,
   police: policeIcon,
   fire: fireIcon,
+  bus: busIcon,
+  thermometer: thermometerIcon,
+  snowflake: snowflakeIcon,
   default: defaultIcon,
 };
 

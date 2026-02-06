@@ -7,26 +7,25 @@ import { NextResponse } from 'next/server';
 import { fetchWeatherCameras } from '@/lib/data/weathercam/client';
 import { transformWeatherCameraStation } from '@/lib/data/weathercam/transform';
 import type { WeatherCameraStation } from '@/lib/data/weathercam/types';
+import { getOrFetch } from '@/lib/cache/redis';
 
 export const revalidate = 300; // ISR: 5 min cache
 
 export async function GET() {
   try {
-    const apiResponse = await fetchWeatherCameras();
-
-    if (!apiResponse.features || apiResponse.features.length === 0) {
-      console.warn('No weather camera features received from API');
-      return NextResponse.json([], { status: 200 });
-    }
-
-    // Transformoi ja suodata asemia
-    const stations: WeatherCameraStation[] = apiResponse.features
-      .map(transformWeatherCameraStation)
-      .filter((station): station is WeatherCameraStation => station !== null);
-
-    console.log(
-      `Processed ${stations.length} weather camera stations from ${apiResponse.features.length} total`
+    const stations = await getOrFetch<WeatherCameraStation[]>(
+      'weathercam:stations',
+      async () => {
+        const apiResponse = await fetchWeatherCameras();
+        if (!apiResponse.features || apiResponse.features.length === 0) return [];
+        return apiResponse.features
+          .map(transformWeatherCameraStation)
+          .filter((station): station is WeatherCameraStation => station !== null);
+      },
+      240 // 4min TTL (polling 5min)
     );
+
+    console.log(`Weathercam API: ${stations.length} stations`);
 
     return NextResponse.json(stations, {
       status: 200,

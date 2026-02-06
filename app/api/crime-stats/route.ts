@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchCrimeMapData, fetchAvailableYears } from '@/lib/data/crime/api';
 
+export const revalidate = 3600; // ISR: 1h cache (static data)
+
 /**
  * GET /api/crime-stats
  *
@@ -26,8 +28,11 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Crime stats API error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch crime statistics', details: String(error) },
-      { status: 500 }
+      { type: 'FeatureCollection', features: [], metadata: { error: true } },
+      {
+        status: 200,
+        headers: { 'Cache-Control': 'public, max-age=60' },
+      }
     );
   }
 }
