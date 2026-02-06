@@ -188,8 +188,8 @@ export type NewsSourceKey = keyof typeof NEWS_SOURCES;
 // LAYER GROUPS (Category Navigator)
 // ============================================
 
-export type LayerKey = 'weather' | 'roadWeather' | 'weatherCamera' | 'snow' | 'ice' | 'traffic' | 'transit' | 'train' | 'crime' | 'news' | 'election' | 'associations' | 'energy' | 'unemployment' | 'housing' | 'population' | 'health' | 'hotLips';
-export type LayerGroupKey = 'weather' | 'traffic' | 'statistics' | 'media' | 'energy' | 'health' | 'services';
+export type LayerKey = 'weather' | 'roadWeather' | 'weatherCamera' | 'snow' | 'ice' | 'traffic' | 'transit' | 'train' | 'crime' | 'news' | 'election' | 'associations' | 'energy' | 'unemployment' | 'housing' | 'population' | 'health';
+export type LayerGroupKey = 'weather' | 'traffic' | 'statistics' | 'media' | 'energy' | 'health';
 
 export interface LayerGroupConfig {
   label: string;
@@ -242,13 +242,6 @@ export const LAYER_GROUPS: Record<LayerGroupKey, LayerGroupConfig> = {
     tailwindColor: 'group-media',
     layers: ['news'],
   },
-  services: {
-    label: 'Palvelut',
-    icon: '🏪',
-    color: '#e53935',
-    tailwindColor: 'group-services',
-    layers: ['hotLips'],
-  },
 } as const;
 
 export const LAYER_INFO: Record<LayerKey, { label: string; icon: string; description: string }> = {
@@ -269,5 +262,4 @@ export const LAYER_INFO: Record<LayerKey, { label: string; icon: string; descrip
   housing: { label: 'Asuntohinnat', icon: '🏠', description: 'Tilastokeskus €/m²' },
   population: { label: 'Väestö', icon: '👥', description: 'Tilastokeskus 31.12.' },
   health: { label: 'Terveys', icon: '🏥', description: 'THL/Sotkanet indikaattorit' },
-  hotLips: { label: 'Hot Lips', icon: '🌶️', description: '8 myymälää' },
 } as const;

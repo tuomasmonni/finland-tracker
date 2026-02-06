@@ -149,11 +149,6 @@ interface UnifiedFilterState {
     isLoading: boolean;
   };
 
-  // Hot Lips
-  hotLips: {
-    layerVisible: boolean;
-  };
-
   // Yleiset asetukset
   theme: MapTheme;
 
@@ -247,9 +242,6 @@ interface UnifiedFilterActions {
   setHealthYear: (year: string) => void;
   setHealthLayerVisible: (visible: boolean) => void;
   setHealthLoading: (loading: boolean) => void;
-
-  // Hot Lips actions
-  setHotLipsLayerVisible: (visible: boolean) => void;
 
   // General actions
   setTheme: (theme: MapTheme) => void;
@@ -345,9 +337,6 @@ const DEFAULT_STATE: UnifiedFilterState = {
     year: '2023',
     layerVisible: false,
     isLoading: false,
-  },
-  hotLips: {
-    layerVisible: false,
   },
   theme: 'dark',
   activeGroup: null,
@@ -812,12 +801,6 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     }));
   }, []);
 
-  // ========== HOT LIPS ACTIONS ==========
-
-  const setHotLipsLayerVisible = useCallback((visible: boolean) => {
-    setState(prev => ({ ...prev, hotLips: { ...prev.hotLips, layerVisible: visible } }));
-  }, []);
-
   // ========== GENERAL ACTIONS ==========
 
   const setTheme = useCallback((theme: MapTheme) => {
@@ -880,7 +863,6 @@ export function UnifiedFilterProvider({ children }: UnifiedFilterProviderProps) 
     setHealthYear,
     setHealthLayerVisible,
     setHealthLoading,
-    setHotLipsLayerVisible,
     setTheme,
     resetFilters,
     setActiveGroup,
