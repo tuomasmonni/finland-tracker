@@ -235,6 +235,13 @@ export const LAYER_GROUPS: Record<LayerGroupKey, LayerGroupConfig> = {
     tailwindColor: 'group-media',
     layers: ['news'],
   },
+  services: {
+    label: 'Palvelut',
+    icon: '🏪',
+    color: '#ec4899',
+    tailwindColor: 'group-services',
+    layers: ['hotLips'],
+  },
 } as const;
 
 export const LAYER_INFO: Record<LayerKey, { label: string; icon: string; description: string }> = {
@@ -254,4 +261,5 @@ export const LAYER_INFO: Record<LayerKey, { label: string; icon: string; descrip
   housing: { label: 'Asuntohinnat', icon: '🏠', description: 'Tilastokeskus €/m²' },
   population: { label: 'Väestö', icon: '👥', description: 'Tilastokeskus 31.12.' },
   health: { label: 'Terveys', icon: '🏥', description: 'THL/Sotkanet indikaattorit' },
+  hotLips: { label: 'Hot Lips', icon: '🌶️', description: '2 myymälää' },
 } as const;
