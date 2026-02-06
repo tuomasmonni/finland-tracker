@@ -20,31 +20,15 @@ const ICONS_LAYER = 'train-icons';
 export default function TrainLayer({ map, onEventSelect }: TrainLayerProps) {
   const { train } = useUnifiedFilters();
   const [allData, setAllData] = useState<EventFeatureCollection | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [layersReady, setLayersReady] = useState(false);
+  const fetchDataRef = useRef<(() => Promise<void>) | null>(null);
 
-  // Fetch data
-  const fetchData = async () => {
-    try {
-      const response = await fetch('/api/train');
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const result: EventFeatureCollection = await response.json();
-      setAllData(result);
-    } catch (error) {
-      console.error('Failed to fetch train data:', error);
-    }
-  };
-
-  // Init polling - only when layer is visible
+  const layerVisibleRef = useRef(train.layerVisible);
   useEffect(() => {
-    if (!train.layerVisible) return;
-    fetchData();
-    intervalRef.current = setInterval(fetchData, POLLING_INTERVALS.trains);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    layerVisibleRef.current = train.layerVisible;
   }, [train.layerVisible]);
 
-  // Setup source & layers
+  // Map setup — follows TrafficLayer's proven pattern
   useEffect(() => {
     if (!map) return;
 
@@ -163,26 +147,31 @@ export default function TrainLayer({ map, onEventSelect }: TrainLayerProps) {
             screenPosition: { x: e.point.x, y: e.point.y },
           });
         });
-
-        // Cursor styles
-        const handleIconEnter = () => { map.getCanvas().style.cursor = 'pointer'; };
-        const handleIconLeave = () => { map.getCanvas().style.cursor = ''; };
-        map.on('mouseenter', ICONS_LAYER, handleIconEnter);
-        map.on('mouseleave', ICONS_LAYER, handleIconLeave);
-        map.on('mouseenter', CLUSTER_LAYER, handleIconEnter);
-        map.on('mouseleave', CLUSTER_LAYER, handleIconLeave);
       }
     };
 
-    // Re-create source & layers after style change (e.g. satellite toggle)
-    const handleStyleLoad = async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      await addSourceAndLayers();
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/train');
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result: EventFeatureCollection = await response.json();
+        console.log(`[TrainLayer] Fetched ${result.features.length} trains`);
+        setAllData(result);
+      } catch (error) {
+        console.error('[TrainLayer] Fetch failed:', error);
+      }
     };
+
+    fetchDataRef.current = fetchData;
 
     const initMap = async () => {
       await addSourceAndLayers();
-      map.on('style.load', handleStyleLoad);
+      console.log('[TrainLayer] Layers ready');
+      setLayersReady(true);
+      // Initial fetch if layer is already visible
+      if (layerVisibleRef.current) {
+        await fetchData();
+      }
     };
 
     if (map.isStyleLoaded()) {
@@ -191,53 +180,78 @@ export default function TrainLayer({ map, onEventSelect }: TrainLayerProps) {
       map.on('load', initMap);
     }
 
+    const handleStyleLoad = async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      setLayersReady(false);
+      await addSourceAndLayers();
+      setLayersReady(true);
+    };
+    map.on('style.load', handleStyleLoad);
+
+    const handleMouseEnter = () => { map.getCanvas().style.cursor = 'pointer'; };
+    const handleMouseLeave = () => { map.getCanvas().style.cursor = ''; };
+    map.on('mouseenter', ICONS_LAYER, handleMouseEnter);
+    map.on('mouseleave', ICONS_LAYER, handleMouseLeave);
+    map.on('mouseenter', CLUSTER_LAYER, handleMouseEnter);
+    map.on('mouseleave', CLUSTER_LAYER, handleMouseLeave);
+
+    const interval = setInterval(() => {
+      if (!layerVisibleRef.current) return;
+      fetchData();
+    }, POLLING_INTERVALS.trains);
+
     return () => {
+      clearInterval(interval);
+      map.off('mouseenter', ICONS_LAYER, handleMouseEnter);
+      map.off('mouseleave', ICONS_LAYER, handleMouseLeave);
+      map.off('mouseenter', CLUSTER_LAYER, handleMouseEnter);
+      map.off('mouseleave', CLUSTER_LAYER, handleMouseLeave);
       map.off('style.load', handleStyleLoad);
     };
   }, [map, onEventSelect]);
 
-  // Update data + filter by train type
+  // Fetch data when toggled visible with no data
   useEffect(() => {
-    if (!map) return;
+    if (!map || !fetchDataRef.current || !train.layerVisible) return;
+    if (!allData) fetchDataRef.current();
+  }, [map, train.layerVisible, allData]);
 
-    const source = map.getSource(SOURCE_ID);
-    if (!source || !('setData' in source)) return;
-
-    // Clear source when layer is hidden
-    if (!train.layerVisible || !allData) {
-      source.setData({ type: 'FeatureCollection', features: [] });
-      return;
-    }
-
-    // Filter by selected train types
-    const filtered: EventFeatureCollection = {
-      type: 'FeatureCollection',
-      features: allData.features.filter(f => {
-        if (!f.properties.metadata) return true;
-        try {
-          const meta = typeof f.properties.metadata === 'string'
-            ? JSON.parse(f.properties.metadata)
-            : f.properties.metadata;
-          return train.trainTypes.includes(meta.trainType);
-        } catch {
-          return true;
-        }
-      }),
-    };
-
-    source.setData(filtered);
-  }, [map, allData, train.trainTypes, train.layerVisible]);
-
-  // Visibility control
+  // Combined visibility + data filter effect
   useEffect(() => {
-    if (!map) return;
+    if (!map || !layersReady) return;
+
     const vis = train.layerVisible ? 'visible' : 'none';
     [CLUSTER_LAYER, CLUSTER_COUNT_LAYER, ICONS_LAYER].forEach(layerId => {
       if (map.getLayer(layerId)) {
         map.setLayoutProperty(layerId, 'visibility', vis);
       }
     });
-  }, [map, train.layerVisible]);
+
+    const source = map.getSource(SOURCE_ID);
+    if (source && 'setData' in source) {
+      if (!train.layerVisible || !allData) {
+        source.setData({ type: 'FeatureCollection', features: [] });
+      } else {
+        // Filter by selected train types
+        const filtered: EventFeatureCollection = {
+          type: 'FeatureCollection',
+          features: allData.features.filter(f => {
+            if (!f.properties.metadata) return true;
+            try {
+              const meta = typeof f.properties.metadata === 'string'
+                ? JSON.parse(f.properties.metadata)
+                : f.properties.metadata;
+              return train.trainTypes.includes(meta.trainType);
+            } catch {
+              return true;
+            }
+          }),
+        };
+        console.log(`[TrainLayer] Update: ${filtered.features.length}/${allData.features.length} trains (visible=${train.layerVisible})`);
+        source.setData(filtered);
+      }
+    }
+  }, [map, layersReady, allData, train.layerVisible, train.trainTypes]);
 
   return null;
 }
