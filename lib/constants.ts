@@ -169,3 +169,59 @@ export const NEWS_SOURCES = {
 } as const;
 
 export type NewsSourceKey = keyof typeof NEWS_SOURCES;
+
+// ============================================
+// LAYER GROUPS (Category Navigator)
+// ============================================
+
+export type LayerKey = 'weather' | 'roadWeather' | 'weatherCamera' | 'traffic' | 'transit' | 'crime' | 'news';
+export type LayerGroupKey = 'weather' | 'traffic' | 'statistics' | 'media';
+
+export interface LayerGroupConfig {
+  label: string;
+  icon: string;
+  color: string;
+  tailwindColor: string;
+  layers: LayerKey[];
+}
+
+export const LAYER_GROUPS: Record<LayerGroupKey, LayerGroupConfig> = {
+  weather: {
+    label: 'Sää',
+    icon: '☀️',
+    color: '#06b6d4',
+    tailwindColor: 'group-weather',
+    layers: ['weather', 'roadWeather', 'weatherCamera'],
+  },
+  traffic: {
+    label: 'Liikenne',
+    icon: '🚗',
+    color: '#f97316',
+    tailwindColor: 'group-traffic',
+    layers: ['traffic', 'transit'],
+  },
+  statistics: {
+    label: 'Tilastot',
+    icon: '📊',
+    color: '#3b82f6',
+    tailwindColor: 'group-statistics',
+    layers: ['crime'],
+  },
+  media: {
+    label: 'Media',
+    icon: '📰',
+    color: '#f59e0b',
+    tailwindColor: 'group-media',
+    layers: ['news'],
+  },
+} as const;
+
+export const LAYER_INFO: Record<LayerKey, { label: string; icon: string; description: string }> = {
+  weather: { label: 'Sää', icon: '🌡️', description: '~200 FMI-asemaa' },
+  roadWeather: { label: 'Tiesää', icon: '🛣️', description: '~520 asemaa' },
+  weatherCamera: { label: 'Kelikamerat', icon: '📷', description: '~780 kameraa' },
+  traffic: { label: 'Tapahtumat', icon: '⚠️', description: 'Fintraffic-ilmoitukset' },
+  transit: { label: 'Joukkoliikenne', icon: '🚌', description: 'HSL-alueen liikenne' },
+  crime: { label: 'Rikostilastot', icon: '📈', description: 'Tilastokeskus ICCS' },
+  news: { label: 'Uutiset', icon: '📰', description: 'YLE, IL, MTV' },
+} as const;
