@@ -130,12 +130,14 @@ export default function CategorySheet({ group, onClose }: CategorySheetProps) {
           transform: `translateY(${translateY}px)`,
           transition: dragRef.current.isDragging ? 'none' : undefined,
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
-        {/* Drag handle */}
-        <div className="flex justify-center py-2">
+        {/* Drag handle - ONLY this area handles drag gestures */}
+        <div
+          className="flex justify-center py-3 cursor-grab active:cursor-grabbing"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <div className={`w-10 h-1 rounded-full ${isDark ? 'bg-zinc-700' : 'bg-zinc-300'}`} />
         </div>
 
