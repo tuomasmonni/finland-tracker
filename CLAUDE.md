@@ -69,6 +69,10 @@ git merge dev --no-ff         # Dev mainiin
 git push origin main          # → tilannetieto.fi päivittyy
 ```
 
+## Karttateema
+
+**Kartta on AINA tummassa tilassa (dark-v11).** Vaaleaa teemaa ei käytetä, koska tilastotasot (rikostilastot, väkiluku, koroplettikartat ym.) eivät näy vaalealla pohjalla oikein. Teeman vaihtonappi on poistettu UI:sta. Älä lisää teeman vaihtoa takaisin.
+
 ## Tekniset muistiinpanot
 
 - **Väkilukudata:** Tilastokeskus, "Väestö 31.12." joka vuodelle. Varmistettu oikeaksi.

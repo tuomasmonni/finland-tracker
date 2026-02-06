@@ -9,7 +9,6 @@ import {
   MIN_ZOOM,
   MAX_ZOOM,
   MAP_STYLES,
-  type MapTheme,
 } from '@/lib/constants';
 
 // Mapbox token from environment
@@ -20,21 +19,12 @@ mapboxgl.accessToken = token;
 interface MapContainerProps {
   onMapReady?: (map: mapboxgl.Map) => void;
   children?: React.ReactNode;
-  theme?: MapTheme;
 }
 
-export default function MapContainer({ onMapReady, children, theme = 'dark' }: MapContainerProps) {
+export default function MapContainer({ onMapReady, children }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-
-  // Vaihda kartan tyyli kun theme muuttuu (säilytä layerit diff:llä)
-  useEffect(() => {
-    if (map.current && isLoaded) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (map.current as any).setStyle(MAP_STYLES[theme], { diff: true });
-    }
-  }, [theme, isLoaded]);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -42,7 +32,7 @@ export default function MapContainer({ onMapReady, children, theme = 'dark' }: M
     // Luo kartta
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: MAP_STYLES[theme],
+      style: MAP_STYLES.dark,
       center: MAP_CENTER,
       zoom: DEFAULT_ZOOM,
       minZoom: MIN_ZOOM,

@@ -105,7 +105,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [mobileSheetGroup, setMobileSheetGroup] = useState<LayerGroupKey | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventDetails | null>(null);
-  const { theme, activeGroup, setActiveGroup } = useUnifiedFilters();
+  const { activeGroup, setActiveGroup } = useUnifiedFilters();
 
   const handleMapReady = useCallback((mapInstance: MapboxMap) => {
     setMap(mapInstance);
@@ -145,17 +145,13 @@ function AppContent() {
 
       {/* Beta Banner */}
       <div className={`absolute top-12 lg:top-0 left-0 lg:left-[360px] right-0 z-20 flex justify-center pointer-events-none`}>
-        <div className={`pointer-events-auto mt-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg backdrop-blur border ${
-          theme === 'dark'
-            ? 'bg-amber-900/80 text-amber-200 border-amber-700/50'
-            : 'bg-amber-50/90 text-amber-800 border-amber-200/80'
-        }`}>
+        <div className="pointer-events-auto mt-2 px-3 py-1.5 rounded-full text-xs font-medium shadow-lg backdrop-blur border bg-amber-900/80 text-amber-200 border-amber-700/50">
           Testiversio — osa ominaisuuksista on vielä kehityksessä
         </div>
       </div>
 
       {/* Map Container */}
-      <MapContainer onMapReady={handleMapReady} theme={theme}>
+      <MapContainer onMapReady={handleMapReady}>
         {map && (
           <>
             <CrimeLayer map={map} />
@@ -199,12 +195,8 @@ function AppContent() {
       <WeatherCameraModal />
 
       {/* Info Badge - Bottom left on desktop (offset for sidebar) */}
-      <div className={`absolute bottom-4 left-4 lg:left-[380px] z-10 hidden lg:block px-4 py-3 rounded-lg backdrop-blur text-xs border shadow-lg transition-colors ${
-        theme === 'dark'
-          ? 'bg-zinc-800/90 text-zinc-400 border-zinc-700'
-          : 'bg-white/90 text-zinc-600 border-zinc-200'
-      }`}>
-        <p className={`font-medium ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-900'}`}>Tietolähteet</p>
+      <div className="absolute bottom-4 left-4 lg:left-[380px] z-10 hidden lg:block px-4 py-3 rounded-lg backdrop-blur text-xs border shadow-lg bg-zinc-800/90 text-zinc-400 border-zinc-700">
+        <p className="font-medium text-zinc-300">Tietolähteet</p>
         <p>YLE, IL, MTV + Tilastokeskus + Fintraffic + FMI</p>
         <p className={`mt-1 text-zinc-500`}>Päivittyy automaattisesti</p>
       </div>
