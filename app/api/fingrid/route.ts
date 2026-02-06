@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchEnergyOverview } from '@/lib/data/fingrid/client';
 
-export const revalidate = 300; // ISR: 5 min cache
+export const dynamic = 'force-dynamic'; // API-avain → ei prerenderöidä
 
 /**
  * GET /api/fingrid
@@ -38,7 +38,7 @@ export async function GET() {
     console.error('Fingrid API route error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-cache' } }
     );
   }
 }

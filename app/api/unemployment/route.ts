@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchUnemploymentMapData } from '@/lib/data/unemployment/api';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   const year = request.nextUrl.searchParams.get('year') || '2024';
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'public, max-age=1800, stale-while-revalidate=3600',
       },
     });
   } catch (error) {

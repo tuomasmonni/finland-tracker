@@ -3,7 +3,7 @@ import { fetchIndicatorByMunicipality } from '@/lib/data/sotkanet/client';
 import { getOrFetch } from '@/lib/cache/redis';
 import { fetchMunicipalityBoundaries } from '@/lib/data/crime/api';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
 function categorizeByQuantile(value: number, allValues: number[]): 'low' | 'medium' | 'high' | 'very_high' {
   const sorted = [...allValues].sort((a, b) => a - b);

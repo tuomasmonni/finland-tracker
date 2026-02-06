@@ -8,7 +8,7 @@ import { fetchTrainData } from '@/lib/data/train/client';
 import { transformTrainToEventFeatures } from '@/lib/data/train/transform';
 import { getOrFetch } from '@/lib/cache/redis';
 
-export const revalidate = 10; // ISR: 10 sec (real-time data)
+export const dynamic = 'force-dynamic'; // Ei prerenderöidä buildissa
 
 export async function GET() {
   try {
@@ -21,7 +21,7 @@ export async function GET() {
       8 // 8s TTL (polling 10s)
     );
 
-    console.log(`Train API: ${featureCollection.features.length} trains`);
+    console.log(`Train API: ${featureCollection.features?.length ?? 0} trains`);
 
     return NextResponse.json(featureCollection, {
       status: 200,

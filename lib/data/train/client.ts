@@ -121,6 +121,10 @@ async function fetchTrainLocationsOnly(): Promise<TrainWithLocation[]> {
   }
 
   const locations = await response.json();
+  if (!Array.isArray(locations)) {
+    console.error('[Train] REST API returned non-array:', typeof locations);
+    return [];
+  }
   const result: TrainWithLocation[] = [];
 
   for (const loc of locations) {

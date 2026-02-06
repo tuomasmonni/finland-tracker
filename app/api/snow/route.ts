@@ -8,7 +8,7 @@ import { fetchFmiSnowData } from '@/lib/data/snow/client';
 import { transformSnowToEventFeatures } from '@/lib/data/snow/transform';
 import { getOrFetch } from '@/lib/cache/redis';
 
-export const revalidate = 300; // ISR: 5 min cache
+export const dynamic = 'force-dynamic'; // Ei prerenderöidä buildissa
 
 export async function GET() {
   try {
@@ -21,7 +21,7 @@ export async function GET() {
       240 // 4min TTL (polling 5min)
     );
 
-    console.log(`Snow API: ${featureCollection.features.length} stations`);
+    console.log(`Snow API: ${featureCollection.features?.length ?? 0} stations`);
 
     return NextResponse.json(featureCollection, {
       status: 200,

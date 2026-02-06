@@ -26,10 +26,15 @@ export async function fetchAllTrafficMessages(): Promise<FintrafficMessageRespon
           },
         });
 
-        if (!response.ok) return [];
+        if (!response.ok) {
+          console.error(`[Traffic] ${situationType}: HTTP ${response.status}`);
+          return [];
+        }
 
         const data: FintrafficMessageResponse = await response.json();
-        return data.features || [];
+        const features = data?.features || [];
+        console.log(`[Traffic] ${situationType}: ${features.length} features`);
+        return features;
       } catch (error) {
         console.error(`Failed to fetch ${situationType}:`, error);
         return [];
