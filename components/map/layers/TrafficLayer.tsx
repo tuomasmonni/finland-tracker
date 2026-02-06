@@ -20,6 +20,20 @@ const TIME_RANGE_HOURS: Record<string, number> = {
   'all': 0,
 };
 
+const filterByTimeRange = (
+  data: EventFeatureCollection,
+  timeRange: string
+): EventFeatureCollection => {
+  const hours = TIME_RANGE_HOURS[timeRange] || 0;
+  if (hours === 0) return data; // 'all' = no filtering
+
+  const cutoff = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+  return {
+    type: 'FeatureCollection',
+    features: data.features.filter(f => f.properties.timestamp >= cutoff),
+  };
+};
+
 const filterByCategory = (data: EventFeatureCollection, categories: EventCategory[]): EventFeatureCollection => {
   return {
     type: 'FeatureCollection',
@@ -44,7 +58,7 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     layerVisibleRef.current = traffic?.layerVisible;
   }, [traffic?.layerVisible]);
 
-  const fetchDataRef = useRef<((timeRange?: string) => Promise<void>) | null>(null);
+  const fetchDataRef = useRef<(() => Promise<void>) | null>(null);
 
   // Map setup
   useEffect(() => {
@@ -154,29 +168,15 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
       }
     };
 
-    const fetchData = async (timeRange: string = 'all') => {
+    const fetchData = async () => {
       try {
-        const hours = TIME_RANGE_HOURS[timeRange] || 0;
-        const url = hours > 0
-          ? `/api/history?hours=${hours}&includeInactive=true`
-          : '/api/traffic';
-        console.log('[TrafficLayer] Fetching:', url);
-        const response = await fetch(url);
+        const response = await fetch('/api/traffic');
         if (!response.ok) throw new Error(`Failed to fetch: ${response.status}`);
         const data: EventFeatureCollection = await response.json();
         console.log(`[TrafficLayer] Fetched ${data.features.length} events`);
         setAllData(data);
-
-        // Also set data directly on source if it exists (avoids race condition)
-        const source = map.getSource('traffic-events');
-        if (source && 'setData' in source) {
-          const categories = filtersRef.current?.categories || [];
-          const filtered = filterByCategory(data, categories);
-          console.log(`[TrafficLayer] Direct setData: ${filtered.features.length} filtered events`);
-          source.setData(filtered);
-        }
       } catch (error) {
-        console.error('Failed to fetch traffic data:', error);
+        console.error('[TrafficLayer] Fetch failed:', error);
       }
     };
 
@@ -258,9 +258,8 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     map.on('click', 'traffic-events-icons', handleClick);
 
     const interval = setInterval(() => {
-      if (!layerVisibleRef.current) return; // Skip polling when hidden
-      const currentTimeRange = filtersRef.current?.timeRange || 'all';
-      fetchData(currentTimeRange);
+      if (!layerVisibleRef.current) return;
+      fetchData();
     }, POLLING_INTERVALS.traffic);
 
     return () => {
@@ -275,11 +274,11 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
     };
   }, [map, onEventSelect]);
 
-  // Time range change + re-fetch when toggled visible with no data
+  // Fetch data when toggled visible with no data
   useEffect(() => {
     if (!map || !fetchDataRef.current || !traffic?.layerVisible) return;
-    fetchDataRef.current(traffic?.timeRange || 'all');
-  }, [map, traffic?.timeRange, traffic?.layerVisible]);
+    if (!allData) fetchDataRef.current();
+  }, [map, traffic?.layerVisible, allData]);
 
   // Combined visibility + data filter effect
   // Single effect ensures clusters always update atomically
@@ -306,13 +305,14 @@ export default function TrafficLayer({ map, onEventSelect }: TrafficLayerProps) 
         // Layer hidden or no data → empty source so clusters disappear
         source.setData({ type: 'FeatureCollection', features: [] });
       } else {
-        // Layer visible → set filtered data
-        const filtered = filterByCategory(allData, traffic?.categories || []);
-        console.log(`[TrafficLayer] Update: ${filtered.features.length} filtered events, visible=${traffic?.layerVisible}`);
+        // Layer visible → apply time range + category filters
+        const timeFiltered = filterByTimeRange(allData, traffic?.timeRange || 'all');
+        const filtered = filterByCategory(timeFiltered, traffic?.categories || []);
+        console.log(`[TrafficLayer] Update: ${filtered.features.length}/${allData.features.length} events (timeRange=${traffic?.timeRange}, visible=${traffic?.layerVisible})`);
         source.setData(filtered);
       }
     }
-  }, [map, layersReady, allData, traffic?.layerVisible, traffic?.categories]);
+  }, [map, layersReady, allData, traffic?.layerVisible, traffic?.categories, traffic?.timeRange]);
 
   return null;
 }
