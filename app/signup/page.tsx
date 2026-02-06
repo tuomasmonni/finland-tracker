@@ -9,6 +9,7 @@ export default function SignupPage() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,6 +18,7 @@ export default function SignupPage() {
     e.preventDefault();
     setError('');
     if (password.length < 6) { setError('Salasanan tulee olla vähintään 6 merkkiä'); return; }
+    if (password !== passwordConfirm) { setError('Salasanat eivät täsmää'); return; }
     setIsSubmitting(true);
     const { error } = await signUpWithEmail(email, password, displayName);
     if (error) { setError(error.message); } else { setSuccess(true); }
@@ -60,6 +62,7 @@ export default function SignupPage() {
             <div><label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-1.5">Nimi</label><input id="name" type="text" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" placeholder="Matti Meikäläinen" /></div>
             <div><label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1.5">Sähköposti</label><input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" placeholder="nimi@esimerkki.fi" /></div>
             <div><label htmlFor="password" className="block text-sm font-medium text-zinc-300 mb-1.5">Salasana</label><input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" placeholder="Vähintään 6 merkkiä" /></div>
+            <div><label htmlFor="passwordConfirm" className="block text-sm font-medium text-zinc-300 mb-1.5">Salasana uudelleen</label><input id="passwordConfirm" type="password" required minLength={6} value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" placeholder="Kirjoita salasana uudelleen" /></div>
             <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium rounded-lg px-4 py-2.5 transition-colors">{isSubmitting ? 'Luodaan tiliä...' : 'Luo tili'}</button>
           </form>
           <div className="text-center"><p className="text-sm text-zinc-400">Onko sinulla jo tili? <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">Kirjaudu sisään</Link></p></div>
