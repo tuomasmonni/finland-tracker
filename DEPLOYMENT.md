@@ -280,6 +280,53 @@ Tilastokeskus:
 - Public API
 - Rate limit friendly
 
+## Ulkoiset palvelut ja kustannukset
+
+> **Päivitetty:** 06.02.2026
+
+### Maksulliset palvelut (token/avain tarvitaan)
+
+| Palvelu | Käyttö | Free Tier | Hinta skaalauksessa | Env-muuttuja | Status |
+|---------|--------|-----------|---------------------|--------------|--------|
+| **Mapbox** | Karttanäkymä (GL JS) | 50 000 karttanäyttöä/kk | ~$5-50/kk riippuen käytöstä | `NEXT_PUBLIC_MAPBOX_TOKEN` | Luottokortti lisätty 06.02.2026, Pay-as-you-go |
+| **Vercel** | Hosting (Next.js) | 100 GB BW, 100k func calls/kk | Pro $20/kk, BW $40/100GB | - | Hobby-tili käytössä |
+| **Upstash Redis** | API-vastausten välimuisti | 10 000 komentoa/pv, 256 MB | $0.20+/pv | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Käytössä, vähentää 95% API-kutsuja |
+| **Anthropic Claude** | Uutisten AI-analyysi (Haiku) | Ei free tieriä | ~$0.01/artikkeli | `ANTHROPIC_API_KEY` | Lisätty 06.02.2026, fallback keyword-analyysi toimii ilman |
+| **Supabase** | PostgreSQL-tietokanta | 500 MB, 2 GB BW | $25+/kk | `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Konfiguroitu, EI vielä aktiivisessa käytössä |
+
+### Ilmaiset palvelut (ei tokenia, ei rajoituksia)
+
+| Palvelu | Käyttö | Data |
+|---------|--------|------|
+| **FMI (Ilmatieteen laitos)** | Sääasemat, lumitilanne | ~200 sääasemaa, 5 min polling |
+| **Fintraffic Digitraffic** | Liikenne, tiesää, kelikamerat | ~185 tapahtumaa, ~520 tiesää-asemaa, ~780 kameraa |
+| **HSL Digitransit** | Joukkoliikenne (GTFS-RT) | ~1000 ajoneuvoa, 15s polling |
+| **Tilastokeskus PxWeb** | Rikostilastot, väkiluvut, kuntarajat | Staattinen data + WFS-rajapinta |
+| **RSS-syötteet** | Uutiset (YLE, IL, MTV) | 15 min polling |
+
+### Skaalausriskikohdat (kun käyttäjiä tulee paljon)
+
+1. **Mapbox** — Ensimmäinen pullonkaula. 50k ilmaista näyttöä/kk = ~1 700/pv. Jos sovellus saa medianäkyvyyttä, ylittyy nopeasti. **Arvio: $50-200/kk @ 10k käyttäjää/pv.**
+
+2. **Vercel** — Hobby-tilin 100 GB BW ja 100k function calls riittävät alkuun, mutta ~5k DAU:n jälkeen Pro-tilille ($20/kk) siirtyminen välttämätöntä. Serverless function timeout myös kasvaa 10s → 60s.
+
+3. **Upstash Redis** — Free tier (10k komentoa/pv) riittää yhdelle käyttäjälle hyvin, mutta jokainen API-reitti tekee cache-kutsuja. **Arvio: Pay-as-you-go ~$5-15/kk @ 10k DAU.**
+
+4. **Anthropic API** — Uutisanalyysi pyörii serveripuolella, ei skaalaudu käyttäjien mukaan (yksi haku/15 min). **Arvio: ~$5-10/kk vakio.**
+
+5. **Supabase** — Ei vielä käytössä, mutta jos historia-/käyttäjädata otetaan käyttöön, $25/kk Pro-tili tarpeen.
+
+### Yhteenveto kustannuksista
+
+| Skenaario | Mapbox | Vercel | Redis | Claude | Yht. |
+|-----------|--------|--------|-------|--------|------|
+| **Nyt (dev/beta)** | $0 | $0 | $0 | ~$5 | ~$5/kk |
+| **~1k DAU** | ~$20 | $0 | ~$5 | ~$5 | ~$30/kk |
+| **~10k DAU** | ~$100 | $20 | ~$15 | ~$10 | ~$145/kk |
+| **~50k DAU** | ~$400 | $20+ | ~$30 | ~$10 | ~$460/kk |
+
+---
+
 ## Rollback
 
 ### Vercel Rollback
