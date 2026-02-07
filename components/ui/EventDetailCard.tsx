@@ -175,6 +175,21 @@ export default function EventDetailCard({ event, onClose }: EventDetailCardProps
             </div>
           )}
 
+          {/* Uutislinkki (yksittäinen artikkeli) */}
+          {event.type === 'news' && !!event.metadata?.sourceUrl && !event.metadata?.isCluster && (
+            <a
+              href={String(event.metadata.sourceUrl)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 bg-amber-900/30 border border-amber-700/40 rounded-lg p-2.5 text-amber-400 hover:text-amber-300 hover:bg-amber-900/50 transition-colors"
+            >
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+              <span className="text-xs font-medium">Lue uutinen — {event.source}</span>
+            </a>
+          )}
+
           {/* Location */}
           <div className="bg-zinc-800/50 rounded-lg p-2.5">
             <div className="flex items-start gap-2">
