@@ -123,11 +123,15 @@ export async function fetchEnergyOverview(apiKey: string): Promise<EnergyOvervie
     { key: 'FI-NO',  id: FINGRID_DATASETS.transferFiNo.id },
   ];
 
-  // Hae sarjassa (Fingrid rate limit: 10 req/min)
+  // Hae sarjassa viiveellä (Fingrid rate limit: 10 req/min, burst ~1/s)
+  const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
   const values: Record<string, number> = {};
   let latestTimestamp = '';
 
-  for (const [key, id] of Object.entries(datasetIds)) {
+  const entries = Object.entries(datasetIds);
+  for (let i = 0; i < entries.length; i++) {
+    const [key, id] = entries[i];
+    if (i > 0) await delay(800);
     try {
       const point = await fetchLatestDatapoint(id, apiKey);
       values[key] = point?.value ?? 0;
@@ -140,7 +144,9 @@ export async function fetchEnergyOverview(apiKey: string): Promise<EnergyOvervie
   }
 
   const transfers: CrossBorderTransfer[] = [];
-  for (const { key, id } of transferDatasets) {
+  for (let i = 0; i < transferDatasets.length; i++) {
+    const { key, id } = transferDatasets[i];
+    await delay(800);
     try {
       const point = await fetchLatestDatapoint(id, apiKey);
       transfers.push({
