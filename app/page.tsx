@@ -6,6 +6,7 @@ import {
   UnifiedFilterProvider,
   useUnifiedFilters,
 } from '@/lib/contexts/UnifiedFilterContext';
+import { AIChatProvider, useAIChat } from '@/lib/contexts/AIChatContext';
 import { type LayerGroupKey } from '@/lib/constants';
 import Header from '@/components/ui/Header';
 import Sidebar from '@/components/ui/Sidebar';
@@ -106,12 +107,23 @@ const WeatherCameraModal = dynamic(
   { ssr: false }
 );
 
+const AIChatPanel = dynamic(
+  () => import('@/components/ai/AIChatPanel'),
+  { ssr: false }
+);
+
+const ArtifactLayer = dynamic(
+  () => import('@/components/map/layers/ArtifactLayer'),
+  { ssr: false }
+);
+
 function AppContent() {
   const [map, setMap] = useState<MapboxMap | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mobileSheetGroup, setMobileSheetGroup] = useState<LayerGroupKey | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventDetails | null>(null);
   const { activeGroup, setActiveGroup } = useUnifiedFilters();
+  const { toggleChat, isOpen: isChatOpen } = useAIChat();
 
   const handleMapReady = useCallback((mapInstance: MapboxMap) => {
     setMap(mapInstance);
@@ -177,6 +189,7 @@ function AppContent() {
             <PopulationLayer map={map} />
             <HealthLayer map={map} />
             <EnergyTransferLayer map={map} />
+            <ArtifactLayer map={map} />
           </>
         )}
       </MapContainer>
@@ -213,6 +226,24 @@ function AppContent() {
         <p className={`mt-1 text-zinc-500`}>Päivittyy automaattisesti</p>
       </div>
 
+      {/* AI Chat Toggle Button - Desktop: right side, Mobile: above bottom bar */}
+      <button
+        onClick={toggleChat}
+        className={`fixed z-30 rounded-full shadow-lg transition-all ${
+          isChatOpen
+            ? 'hidden'
+            : 'bottom-20 right-4 lg:bottom-8 lg:right-[380px] w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-400 hover:to-purple-500 text-white flex items-center justify-center'
+        }`}
+        title="AI Analyytikko"
+      >
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+        </svg>
+      </button>
+
+      {/* AI Chat Panel */}
+      <AIChatPanel />
+
       {/* Loading Screen */}
       {isLoading && <LoadingScreen />}
     </main>
@@ -222,7 +253,9 @@ function AppContent() {
 export default function Home() {
   return (
     <UnifiedFilterProvider>
-      <AppContent />
+      <AIChatProvider>
+        <AppContent />
+      </AIChatProvider>
     </UnifiedFilterProvider>
   );
 }
