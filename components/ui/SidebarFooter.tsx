@@ -46,6 +46,9 @@ export default function SidebarFooter({ collapsed }: SidebarFooterProps) {
       )}
       {!isLoading && user && (
         <div className="flex items-center gap-1 mb-2">
+          <Link href="/profile" className={`flex-1 text-center px-2 py-1 rounded text-[11px] transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200' : 'bg-black/5 hover:bg-black/10 text-zinc-600 hover:text-zinc-900'}`}>
+            Profiili
+          </Link>
           <Link href="/roadmap" className={`flex-1 text-center px-2 py-1 rounded text-[11px] transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-zinc-200' : 'bg-black/5 hover:bg-black/10 text-zinc-600 hover:text-zinc-900'}`}>
             Roadmap
           </Link>

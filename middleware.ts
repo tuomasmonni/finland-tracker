@@ -30,7 +30,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user && request.nextUrl.pathname.startsWith('/roadmap')) {
+  if (!user && (request.nextUrl.pathname.startsWith('/roadmap') || request.nextUrl.pathname.startsWith('/profile'))) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
@@ -44,5 +44,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/roadmap/:path*', '/login', '/signup'],
+  matcher: ['/roadmap/:path*', '/profile/:path*', '/login', '/signup'],
 };

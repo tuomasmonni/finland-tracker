@@ -47,6 +47,9 @@ export default function Header() {
                 </button>
                 {menuOpen && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1 z-50">
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-zinc-300 hover:bg-white/10 hover:text-white" onClick={() => setMenuOpen(false)}>
+                      Profiili
+                    </Link>
                     <Link href="/roadmap" className="block px-4 py-2 text-sm text-zinc-300 hover:bg-white/10 hover:text-white" onClick={() => setMenuOpen(false)}>
                       Roadmap
                     </Link>
