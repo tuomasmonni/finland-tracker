@@ -34,7 +34,7 @@ async function fetchFeed(source: NewsSource): Promise<ParsedFeedItem[]> {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
+    const timeout = setTimeout(() => controller.abort(), 5_000);
 
     const response = await fetch(url, {
       signal: controller.signal,

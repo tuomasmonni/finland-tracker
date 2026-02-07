@@ -138,8 +138,8 @@ async function analyzeWithAI(
   municipalities: Array<{ name: string; lat: number; lng: number }>
 ): Promise<NewsAnalysis[]> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    console.log('[NewsAnalyzer] No API key, using fallback');
+  if (!apiKey || process.env.VERCEL) {
+    console.log('[NewsAnalyzer] No API key or serverless env, using fallback');
     return items.map((item) => fallbackAnalysis(item, municipalities));
   }
 

@@ -57,7 +57,7 @@ function fallbackCluster(articles: NewsArticle[]): number[][] {
  */
 async function aiCluster(articles: NewsArticle[]): Promise<{ clusters: number[][]; summaries: Record<string, string> }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || articles.length < 2) {
+  if (!apiKey || articles.length < 2 || process.env.VERCEL) {
     return { clusters: articles.map((_, i) => [i]), summaries: {} };
   }
 

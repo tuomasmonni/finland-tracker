@@ -3,21 +3,23 @@
  * Hakee RSS-syötteet, analysoi AI:llä, ryhmittelee tapahtumat ja palauttaa GeoJSON
  */
 
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { fetchAllFeeds } from '@/lib/data/news/rss-parser';
 import { analyzeArticles } from '@/lib/data/news/news-analyzer';
 import { clusterArticles } from '@/lib/data/news/event-clusterer';
+import { getCached, setCached } from '@/lib/cache/redis';
 import type { NewsArticle, NewsEvent, NewsCategory, NewsSource } from '@/lib/data/news/types';
 
-// In-memory cache
-let cache: {
+const REDIS_KEY = 'news:processed';
+const REDIS_TTL = 600; // 10 min
+
+interface CachedNewsData {
   articles: NewsArticle[];
   events: NewsEvent[];
   singleArticles: NewsArticle[];
-  timestamp: number;
-} | null = null;
-
-const CACHE_TTL = 5 * 60 * 1000; // 5 min
+}
 
 function getTimeRangeMs(timeRange: string): number {
   switch (timeRange) {
@@ -30,15 +32,16 @@ function getTimeRangeMs(timeRange: string): number {
   }
 }
 
-async function getData(): Promise<{ articles: NewsArticle[]; events: NewsEvent[]; singleArticles: NewsArticle[] }> {
-  const now = Date.now();
-
-  if (cache && now - cache.timestamp < CACHE_TTL) {
-    console.log('[NewsAPI] Using cache');
-    return { articles: cache.articles, events: cache.events, singleArticles: cache.singleArticles };
+async function getData(): Promise<CachedNewsData> {
+  // 1. Try Redis cache
+  const cached = await getCached<CachedNewsData>(REDIS_KEY);
+  if (cached) {
+    console.log('[NewsAPI] Redis cache hit');
+    return cached;
   }
 
-  console.log('[NewsAPI] Fetching fresh data...');
+  // 2. Cache miss — fetch and process
+  console.log('[NewsAPI] Redis cache miss, fetching fresh data...');
   const feeds = await fetchAllFeeds();
 
   // Deduplicate by URL
@@ -52,10 +55,15 @@ async function getData(): Promise<{ articles: NewsArticle[]; events: NewsEvent[]
   const articles = await analyzeArticles(unique);
   const { events, singleArticles } = await clusterArticles(articles);
 
-  cache = { articles, events, singleArticles, timestamp: now };
+  const result: CachedNewsData = { articles, events, singleArticles };
+
+  // 3. Store in Redis (fire-and-forget — don't block response)
+  setCached(REDIS_KEY, result, REDIS_TTL).catch((err) =>
+    console.error('[NewsAPI] Redis setCached error:', err)
+  );
   console.log(`[NewsAPI] Cached ${articles.length} articles, ${events.length} events`);
 
-  return { articles, events, singleArticles };
+  return result;
 }
 
 export async function GET(request: Request) {
