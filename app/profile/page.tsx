@@ -57,11 +57,12 @@ export default function ProfilePage() {
     ]);
 
     if (itemsRes.data) {
-      setItems(itemsRes.data);
+      const data = itemsRes.data as UserItem[];
+      setItems(data);
       setStats({
-        total: itemsRes.data.length,
-        approved: itemsRes.data.filter(i => ['planned', 'in_progress', 'completed'].includes(i.status)).length,
-        completed: itemsRes.data.filter(i => i.status === 'completed').length,
+        total: data.length,
+        approved: data.filter((i: UserItem) => ['planned', 'in_progress', 'completed'].includes(i.status)).length,
+        completed: data.filter((i: UserItem) => i.status === 'completed').length,
         votes_given: votesRes.data?.length || 0,
       });
     }
