@@ -112,7 +112,10 @@ export default function RoadmapPage() {
       is_official: false,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('[Roadmap] Insert error:', error.message, error.code, error.details);
+      throw new Error(error.message);
+    }
     await fetchData();
   };
 
