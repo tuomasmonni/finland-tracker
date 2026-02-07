@@ -54,6 +54,7 @@ export default function NewsLayer({ map, onEventSelect }: NewsLayerProps) {
   const { news } = useUnifiedFilters();
   const [allData, setAllData] = useState<NewsGeoJSON | null>(null);
   const [layersReady, setLayersReady] = useState(false);
+  const fetchDataRef = useRef<(() => Promise<void>) | null>(null);
   const filtersRef = useRef(news);
 
   useEffect(() => {
@@ -196,15 +197,12 @@ export default function NewsLayer({ map, onEventSelect }: NewsLayerProps) {
         const data: NewsGeoJSON = await response.json();
         console.log(`[NewsLayer] Fetched ${data.features?.length || 0} geolocated articles (total: ${data.metadata?.totalArticles || '?'})`);
         setAllData(data);
-
-        const source = map.getSource('news-events');
-        if (source && 'setData' in source) {
-          source.setData(data);
-        }
       } catch (error) {
         console.error('[NewsLayer] Failed to fetch news data:', error);
       }
     };
+
+    fetchDataRef.current = fetchData;
 
     const initMap = () => {
       addSourceAndLayers();
@@ -321,10 +319,6 @@ export default function NewsLayer({ map, onEventSelect }: NewsLayerProps) {
         if (!response.ok) return;
         const data: NewsGeoJSON = await response.json();
         setAllData(data);
-        const source = map.getSource('news-events');
-        if (source && 'setData' in source) {
-          source.setData(data);
-        }
       } catch (error) {
         console.error('[NewsLayer] Filter fetch error:', error);
       }
@@ -332,17 +326,33 @@ export default function NewsLayer({ map, onEventSelect }: NewsLayerProps) {
     fetchData();
   }, [map, layersReady, news?.timeRange, news?.sources, news?.categories, news?.searchQuery]);
 
-  // Visibility toggle
+  // Fetch data when toggled visible with no data
+  useEffect(() => {
+    if (!map || !fetchDataRef.current || !news?.layerVisible) return;
+    if (!allData) fetchDataRef.current();
+  }, [map, news?.layerVisible, allData]);
+
+  // Combined visibility + data effect
   useEffect(() => {
     if (!map || !layersReady) return;
-    const layers = ['news-points', 'news-pulse', 'news-clusters', 'news-cluster-count'];
+
     const vis = news?.layerVisible ? 'visible' : 'none';
+    const layers = ['news-points', 'news-pulse', 'news-clusters', 'news-cluster-count'];
     for (const layerId of layers) {
       if (map.getLayer(layerId)) {
         map.setLayoutProperty(layerId, 'visibility', vis);
       }
     }
-  }, [map, news?.layerVisible, layersReady]);
+
+    const source = map.getSource('news-events');
+    if (source && 'setData' in source) {
+      if (!news?.layerVisible || !allData) {
+        source.setData({ type: 'FeatureCollection', features: [] });
+      } else {
+        source.setData(allData);
+      }
+    }
+  }, [map, layersReady, allData, news?.layerVisible]);
 
   return null;
 }
