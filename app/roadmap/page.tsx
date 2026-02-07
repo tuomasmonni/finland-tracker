@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { getSupabaseBrowserClient } from '@/lib/db/supabase-browser';
 import RoadmapItemCard, { type RoadmapItem } from '@/components/roadmap/RoadmapItemCard';
 import NewItemModal from '@/components/roadmap/NewItemModal';
 import Link from 'next/link';
+
+const MAX_VOTES = 5;
+const ACTIVE_STATUSES = ['proposed', 'planned', 'in_progress'];
 
 const STATUSES = [
   { v: 'all', l: 'Kaikki' },
@@ -59,11 +62,18 @@ export default function RoadmapPage() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const activeVoteCount = useMemo(() => {
+    return items.filter(i => votes.has(i.id) && ACTIVE_STATUSES.includes(i.status)).length;
+  }, [items, votes]);
+
   const handleVoteToggle = async (itemId: string) => {
     const supabase = getSupabaseBrowserClient();
     if (!supabase || !user) return;
 
     const hasVoted = votes.has(itemId);
+
+    // Block new votes when at limit (removing votes is always allowed)
+    if (!hasVoted && activeVoteCount >= MAX_VOTES) return;
 
     // Optimistic update
     setVotes(prev => {
@@ -162,7 +172,12 @@ export default function RoadmapPage() {
             <span>Roadmap</span>
             {isAdmin && <span className="text-xs font-normal text-blue-400 bg-blue-600/20 px-2 py-0.5 rounded-full border border-blue-500/30">Admin</span>}
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">Äänestä tulevista ominaisuuksista ja ehdota omia ideoita.</p>
+          <p className="text-sm text-zinc-400 mt-1">
+            Äänestä tulevista ominaisuuksista ja ehdota omia ideoita.
+            <span className="ml-2 text-xs text-zinc-500">
+              {activeVoteCount}/{MAX_VOTES} ääntä käytössä
+            </span>
+          </p>
         </div>
 
         {/* Filters */}
@@ -218,6 +233,7 @@ export default function RoadmapPage() {
                 isAdmin={isAdmin}
                 onEdit={handleEditItem}
                 onDelete={handleDeleteItem}
+                votingDisabled={!votes.has(item.id) && activeVoteCount >= MAX_VOTES}
               />
             ))}
           </div>

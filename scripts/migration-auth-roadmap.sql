@@ -46,6 +46,10 @@ CREATE TABLE IF NOT EXISTS roadmap_items (
 );
 
 -- 3. Votes table
+-- NOTE: Voting is limited to 5 active votes per user (frontend-enforced).
+-- An "active" vote targets an item with status: proposed, planned, or in_progress.
+-- Votes on completed/rejected items don't count toward the limit (they free up automatically).
+-- Votes are kept in the table for history — the frontend filters active ones at runtime.
 CREATE TABLE IF NOT EXISTS roadmap_votes (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   item_id UUID REFERENCES roadmap_items(id) ON DELETE CASCADE,

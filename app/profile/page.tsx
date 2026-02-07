@@ -17,11 +17,15 @@ interface UserItem {
   created_at: string;
 }
 
+const MAX_VOTES = 5;
+const ACTIVE_STATUSES = ['proposed', 'planned', 'in_progress'];
+
 interface Stats {
   total: number;
   approved: number;
   completed: number;
   votes_given: number;
+  active_votes: number;
 }
 
 const STATUS_ORDER = ['proposed', 'planned', 'in_progress', 'completed', 'rejected'];
@@ -39,7 +43,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
-  const [stats, setStats] = useState<Stats>({ total: 0, approved: 0, completed: 0, votes_given: 0 });
+  const [stats, setStats] = useState<Stats>({ total: 0, approved: 0, completed: 0, votes_given: 0, active_votes: 0 });
   const [items, setItems] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,17 +57,23 @@ export default function ProfilePage() {
 
     const [itemsRes, votesRes] = await Promise.all([
       supabase.from('roadmap_items').select('id, title, description, category, status, vote_count, created_at').eq('author_id', user.id).order('created_at', { ascending: false }),
-      supabase.from('roadmap_votes').select('item_id').eq('user_id', user.id),
+      supabase.from('roadmap_votes').select('item_id, roadmap_items(status)').eq('user_id', user.id),
     ]);
 
     if (itemsRes.data) {
       const data = itemsRes.data as UserItem[];
       setItems(data);
+      const votesData = votesRes.data || [];
+      const activeVotes = votesData.filter((v: Record<string, unknown>) => {
+        const itemData = v.roadmap_items as Record<string, unknown> | null;
+        return itemData && ACTIVE_STATUSES.includes(itemData.status as string);
+      }).length;
       setStats({
         total: data.length,
         approved: data.filter((i: UserItem) => ['planned', 'in_progress', 'completed'].includes(i.status)).length,
         completed: data.filter((i: UserItem) => i.status === 'completed').length,
-        votes_given: votesRes.data?.length || 0,
+        votes_given: votesData.length,
+        active_votes: activeVotes,
       });
     }
     setLoading(false);
@@ -152,8 +162,8 @@ export default function ProfilePage() {
             <p className="text-xs text-zinc-400 mt-1">Toteutettu</p>
           </div>
           <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-purple-400">{stats.votes_given}</p>
-            <p className="text-xs text-zinc-400 mt-1">Ääniä annettu</p>
+            <p className="text-2xl font-bold text-purple-400">{stats.active_votes}/{MAX_VOTES}</p>
+            <p className="text-xs text-zinc-400 mt-1">Aktiiviset äänet</p>
           </div>
         </div>
 
